@@ -20,6 +20,7 @@
 package biz.flatsw.cabledesigner.model.defs;
 
 import biz.flatsw.cabledesigner.parser.Location;
+import biz.flatsw.cabledesigner.parser.SourceFileErrorReporter;
 import biz.flatsw.cabledesigner.parser.SymbolBase;
 
 import java.util.*;
@@ -31,11 +32,11 @@ public class ConnectorModelImpl extends SymbolBase implements ConnectorModel {
     private final int pinCount;
     // pin numbering
     private final List<String> pinNames;
+    private final Map<String, String> pinSections = new HashMap<>();
     // components
     private final List<Component> components = new ArrayList<>();
-    private Component cavityPlug;
     // pin sections
-    private final Map<String, ConnectorPinSection> pinSectionMap=new HashMap<>();
+    private final Map<String, ConnectorPinSection> pinSectionMap = new HashMap<>();
     private final ConnectorPinSection defaultSection;
 
     public ConnectorModelImpl(Location location, ConnectorFamily family,
@@ -44,10 +45,8 @@ public class ConnectorModelImpl extends SymbolBase implements ConnectorModel {
         this.family = family;
         this.gender = gender;
         this.pinCount = pinCount;
-        this.defaultSection=new ConnectorPinSectionImpl();
+        this.defaultSection = new ConnectorPinSectionImpl();
         this.pinNames = new ArrayList<>(pinCount);
-        for (int i = 0; i < pinCount; i++)
-            this.pinNames.add(String.valueOf(i + 1));
     }
 
     @Override
@@ -55,12 +54,24 @@ public class ConnectorModelImpl extends SymbolBase implements ConnectorModel {
         return Collections.unmodifiableList(components);
     }
 
+    private ConnectorPinSection getSection(int position) {
+        String pinName = pinNames.get(position);
+        String sectionName = pinSections.get(pinName);
+        return sectionName != null ? pinSectionMap.get(sectionName) : defaultSection;
+    }
+
     @Override
-    public void setPinNames(List<String> pinNames) {
-        if(pinNames.size()!=pinCount)
-            return;
-        this.pinNames.clear();
+    public void setDefaultPinNames() {
+        for (int i = 0; i < pinCount; i++)
+            this.pinNames.add(String.valueOf(i + 1));
+    }
+
+    @Override
+    public void setPinNames(String sectionName, List<String> pinNames) {
+        if (sectionName != null)
+            pinSectionMap.computeIfAbsent(sectionName, n -> new ConnectorPinSectionImpl());
         this.pinNames.addAll(pinNames);
+        pinNames.forEach(name -> pinSections.put(name, sectionName));
     }
 
     @Override
@@ -68,7 +79,7 @@ public class ConnectorModelImpl extends SymbolBase implements ConnectorModel {
         Component component = new ComponentImpl(partNumber, type, quantity);
         components.add(component);
         if (Component.Type.CAVITY_PLUG.equals(type))
-            cavityPlug = component;
+            defaultSection.setCavityPlug(partNumber);
     }
 
     @Override
@@ -93,7 +104,7 @@ public class ConnectorModelImpl extends SymbolBase implements ConnectorModel {
 
     @Override
     public PartNumber getPinCavityPlug(int position) {
-        return cavityPlug != null ? cavityPlug.getPartNumber() : null;
+        return getSection(position).getCavityPlug();
     }
 
     @Override
@@ -101,11 +112,39 @@ public class ConnectorModelImpl extends SymbolBase implements ConnectorModel {
         return Collections.unmodifiableList(pinNames);
     }
 
+    public void addCavityPlug(Location location,
+                              String sectionName,
+                              PartNumber cavityPlugPartNumber) {
+        ConnectorPinSection section;
+        if (sectionName == null) {
+            section = defaultSection;
+        } else {
+            section = pinSectionMap.get(sectionName);
+            if (section == null) {
+                SourceFileErrorReporter.showError(location, "Section not defined");
+                return;
+            }
+        }
+        section.setCavityPlug(cavityPlugPartNumber);
+    }
+
     @Override
-    public void addPinType(PartNumber pinPartNumber,
+    public void addPinType(Location location,
+                           String sectionName,
+                           PartNumber pinPartNumber,
                            float crossSectionMin, float crossSectionMax,
                            float insulationMin, float insulationMax) {
-        defaultSection.addPinType(
+        ConnectorPinSection section;
+        if (sectionName == null) {
+            section = defaultSection;
+        } else {
+            section = pinSectionMap.get(sectionName);
+            if (section == null) {
+                SourceFileErrorReporter.showError(location, "Section not defined");
+                return;
+            }
+        }
+        section.addPinType(
                 pinPartNumber,
                 crossSectionMin, crossSectionMax,
                 insulationMin, insulationMax);
@@ -113,23 +152,36 @@ public class ConnectorModelImpl extends SymbolBase implements ConnectorModel {
 
     @Override
     public ConnectorPinComponent findSuitablePinType(int position, WireType wireType) {
-        return defaultSection.findMatchingPin(wireType);
+        return getSection(position).findMatchingPin(wireType);
     }
 
     @Override
-    public void addPinSeal(PartNumber sealPartNumber, float insulationMin, float insulationMax) {
-        defaultSection.addPinSeal(
+    public void addPinSeal(Location location,
+                           String sectionName,
+                           PartNumber sealPartNumber,
+                           float insulationMin, float insulationMax) {
+        ConnectorPinSection section;
+        if (sectionName == null) {
+            section = defaultSection;
+        } else {
+            section = pinSectionMap.get(sectionName);
+            if (section == null) {
+                SourceFileErrorReporter.showError(location, "Section not defined");
+                return;
+            }
+        }
+        section.addPinSeal(
                 sealPartNumber,
                 insulationMin, insulationMax);
     }
 
     @Override
     public ConnectorPinComponent findSuitablePinSeal(int position, WireType wireType) {
-        return defaultSection.findMatchingSeal(wireType);
+        return getSection(position).findMatchingSeal(wireType);
     }
 
     @Override
     public boolean needPinSeal(int position, WireType wireType) {
-        return defaultSection.needPinSeal(wireType);
+        return getSection(position).needPinSeal(wireType);
     }
 }

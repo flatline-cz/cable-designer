@@ -36,24 +36,34 @@ public interface ConnectorModel {
     List<Component> listComponents();
 
     // pin definitions
-    void setPinNames(List<String> pinNames);
+    void setDefaultPinNames();
+    void setPinNames(String sectionName, List<String> pinNames);
 
-    void addPinType(PartNumber pinPartNumber,
+    void addPinType(Location location,
+                    String sectionName,
+                    PartNumber pinPartNumber,
                     float crossSectionMin, float crossSectionMax,
                     float insulationMin, float insulationMax);
 
-
-    void addPinSeal(PartNumber sealPartNumber,
+    void addPinSeal(Location location,
+                    String sectionName,
+                    PartNumber sealPartNumber,
                     float insulationMin, float insulationMax);
 
+    void addCavityPlug(Location location,
+                       String sectionName,
+                       PartNumber cavityPlugPartNumber);
 
 
     // pins query
     String getPinName(int position);
 
     PartNumber getPinCavityPlug(int position);
+
     ConnectorPinComponent findSuitablePinType(int position, WireType wireType);
+
     ConnectorPinComponent findSuitablePinSeal(int position, WireType wireType);
+
     boolean needPinSeal(int position, WireType wireType);
 
     int getPinCount();

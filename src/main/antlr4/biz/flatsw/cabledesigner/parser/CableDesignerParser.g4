@@ -44,9 +44,13 @@ connectorDefinition: KEYWORD_DEFINE
     pinNaming_rule?
     KEYWORD_IS connectorComponent+ pinDefinition_rule+ ;
 
-pinNaming_rule: KEYWORD_PIN KEYWORD_NAMES pinName_rule+ ;
+pinNaming_rule: KEYWORD_PIN KEYWORD_NAMES pinName_section_rule+ ;
+
+pinName_section_rule: section=pinName_sectionName_rule? pinName_rule ;
 
 pinName_rule: from=TEXT (SIZE_SEPARATOR to=TEXT)? ;
+
+pinName_sectionName_rule: KEYWORD_SECTION name=TEXT KEYWORD_IS ;
 
 
 connectorComponent: ( KEYWORD_HOUSING | KEYWORD_ACCESSORY | (KEYWORD_CAVITY KEYWORD_PLUG ) )
@@ -64,11 +68,13 @@ connectorModelRef: pinCount_rule family=TEXT (KEYWORD_VARIANT variant=TEXT)?;
 
 pinCount_rule:  ( (single=KEYWORD_SINGLE KEYWORD_PIN) | (pinCount=POSITIVE_NUMBER KEYWORD_PINS) );
 
-pinDefinition_rule:  section=pinSection_rule? pinComponent_rule+;
+pinDefinition_rule:  section=pinSection_rule? pinComponent_rule+ cavityPlugPartNumber_rule?;
 
 pinSection_rule: KEYWORD_SECTION TEXT ;
 
 pinComponent_rule: (pinPartNumber_rule | sealPartNumber_rule ) ;
+
+cavityPlugPartNumber_rule: KEYWORD_CAVITY KEYWORD_PLUG partNumber_rule ;
 
 pinPartNumber_rule: KEYWORD_PIN partNumber_rule KEYWORD_FOR
                         pinCrossSection_rule

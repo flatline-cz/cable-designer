@@ -31,7 +31,7 @@ those I need to be satisfied with my own harness.
 1. Multi-wire cables
 2. **STAR** topology of certain signals (especially ground)
 3. Connector variants
-4. Pin sections
+4. <del>Pin sections</del> *Done*
 5. Logical signal routing (based on device description)
 6. Correct handing of pin size / wire size when more than one wire is 
 connected to the pin

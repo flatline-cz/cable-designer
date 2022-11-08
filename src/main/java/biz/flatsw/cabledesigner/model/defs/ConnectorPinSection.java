@@ -21,6 +21,10 @@ package biz.flatsw.cabledesigner.model.defs;
 
 public interface ConnectorPinSection {
 
+    PartNumber getCavityPlug();
+
+    void setCavityPlug(PartNumber partNumber);
+
     void addPinType(PartNumber pinPartNumber,
                     float crossSectionMin, float crossSectionMax,
                     float insulationMin, float insulationMax);

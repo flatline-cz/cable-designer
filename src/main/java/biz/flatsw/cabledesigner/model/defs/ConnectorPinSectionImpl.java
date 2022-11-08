@@ -25,6 +25,18 @@ import java.util.List;
 public class ConnectorPinSectionImpl implements ConnectorPinSection {
     private final List<ConnectorPinComponent> pinTypes=new ArrayList<>();
     private final List<ConnectorPinComponent> pinSeals=new ArrayList<>();
+    private PartNumber cavityPlug;
+
+
+    @Override
+    public PartNumber getCavityPlug() {
+        return cavityPlug;
+    }
+
+    @Override
+    public void setCavityPlug(PartNumber cavityPlug) {
+        this.cavityPlug = cavityPlug;
+    }
 
     @Override
     public void addPinType(PartNumber pinPartNumber,

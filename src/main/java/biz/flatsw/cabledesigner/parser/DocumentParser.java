@@ -33,9 +33,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 public class DocumentParser implements InvocationHandler {
     private FileManager.InputFile currentFile;
@@ -52,7 +50,8 @@ public class DocumentParser implements InvocationHandler {
             "PinDefinition", "PinComponent", "PinPartNumber",
             "PinCrossSection", "PinInsulation",
             "InsulationDiameter", "SealPartNumber",
-            "PinName", "PinNumber", "PinNaming"
+            "PinName", "PinNumber", "PinNaming", "PinName_section", "PinName_sectionName",
+            "PinSection", "CavityPlugPartNumber"
     };
 
     public void parseFile(String file, FileManager.InputFile parent) {
@@ -237,50 +236,59 @@ public class DocumentParser implements InvocationHandler {
 //    }
 
 
-    private void parsePinNameSequence(CableDesignerParser.PinName_ruleContext ctx, List<String> pinNames) {
+    private void parsePinNameSequence(CableDesignerParser.PinName_ruleContext ctx,
+                                      List<String> pinNames) {
         // single name?
-        if(ctx.to==null) {
+        if (ctx.to == null) {
             pinNames.add(extractText(ctx.from.getText()));
             return;
         }
 
         // get range
-        String startText=extractText(ctx.from.getText());
-        String endText=extractText(ctx.to.getText());
+        String startText = extractText(ctx.from.getText());
+        String endText = extractText(ctx.to.getText());
+
+        // numeric?
+        if(startText.matches("[0-9]+") && endText.matches("[0-9]+")) {
+            int i=Integer.parseInt(startText);
+            int last=Integer.parseInt(endText);
+            for(;i<=last;i++)
+                pinNames.add(String.valueOf(i));
+            return;
+        }
 
         // find character that differs
-        if(startText.length()!=endText.length()) {
+        if (startText.length() != endText.length()) {
             throw new CompilerFailure();
         }
-        int pos=-1;
-        for(int i=0;i<startText.length();i++) {
-            if(startText.charAt(i)==endText.charAt(i))
+        int pos = -1;
+        for (int i = 0; i < startText.length(); i++) {
+            if (startText.charAt(i) == endText.charAt(i))
                 continue;
-            if(pos!=-1)
+            if (pos != -1)
                 throw new CompilerFailure();
-            pos=i;
+            pos = i;
         }
-        if(pos==-1)
+        if (pos == -1)
             throw new CompilerFailure();
 
         // number?
-        char startCh=startText.charAt(pos);
-        char endCh=endText.charAt(pos);
-        if(startCh>endCh)
+        char startCh = startText.charAt(pos);
+        char endCh = endText.charAt(pos);
+        if (startCh > endCh)
             throw new CompilerFailure();
 
         // generate sequence
-        while(startCh<=endCh) {
-            StringBuilder name=new StringBuilder();
-            if(pos!=0)
+        while (startCh <= endCh) {
+            StringBuilder name = new StringBuilder();
+            if (pos != 0)
                 name.append(startText, 0, pos);
             name.append(startCh);
-            if(pos<startText.length()-1)
-                name.append(startText, pos+1, startText.length()-1);
+            if (pos < startText.length() - 1)
+                name.append(startText, pos + 1, startText.length() - 1);
             pinNames.add(name.toString());
             startCh++;
         }
-
 
 
     }
@@ -297,13 +305,16 @@ public class DocumentParser implements InvocationHandler {
                         connectorModelIdentification);
 
         // parse pin naming
-        if(ctx.pinNaming_rule()!=null) {
-            List<String> pinNames=new ArrayList<>();
-            for(CableDesignerParser.PinName_ruleContext nameCtx
-                    : ctx.pinNaming_rule().pinName_rule()) {
-                parsePinNameSequence(nameCtx, pinNames);
+        if (ctx.pinNaming_rule() != null) {
+            for (CableDesignerParser.PinName_section_ruleContext sectionCtx
+                    : ctx.pinNaming_rule().pinName_section_rule()) {
+                List<String> pins=new ArrayList<>();
+                parsePinNameSequence(sectionCtx.pinName_rule(), pins);
+                connectorModel.setPinNames(sectionCtx.section!=null?
+                        extractText(sectionCtx.section.name.getText()):null, pins);
             }
-            connectorModel.setPinNames(pinNames);
+        } else {
+            connectorModel.setDefaultPinNames();
         }
 
         // parse components
@@ -327,12 +338,25 @@ public class DocumentParser implements InvocationHandler {
         // parse pins
         for (CableDesignerParser.PinDefinition_ruleContext sectionCtx
                 : ctx.pinDefinition_rule()) {
-            // TODO: extract section
+            // extract section
+            String sectionName = sectionCtx.section != null
+                    ? extractText(sectionCtx.section.TEXT().getText())
+                    : null;
+            Location location=getLocation(sectionCtx);
+
+            if(sectionCtx.cavityPlugPartNumber_rule()!=null) {
+                connectorModel.addCavityPlug(
+                        location,
+                        sectionName,
+                        parsePartNumber(
+                                sectionCtx.cavityPlugPartNumber_rule().partNumber_rule()));
+            }
 
             for (CableDesignerParser.PinComponent_ruleContext pinComponentCtx
                     : sectionCtx.pinComponent_rule()) {
                 if (pinComponentCtx.pinPartNumber_rule() != null) {
                     connectorModel.addPinType(
+                            location, sectionName,
                             parsePartNumber(
                                     pinComponentCtx.pinPartNumber_rule()
                                             .partNumber_rule()),
@@ -363,6 +387,7 @@ public class DocumentParser implements InvocationHandler {
                 }
                 if (pinComponentCtx.sealPartNumber_rule() != null) {
                     connectorModel.addPinSeal(
+                            location, sectionName,
                             parsePartNumber(
                                     pinComponentCtx.sealPartNumber_rule()
                                             .partNumber_rule()),
@@ -440,9 +465,9 @@ public class DocumentParser implements InvocationHandler {
     }
 
     private String parsePinName(CableDesignerParser.PinRef_ruleContext ctx) {
-        if(ctx instanceof CableDesignerParser.PinNameContext)
+        if (ctx instanceof CableDesignerParser.PinNameContext)
             return extractText(ctx.getText());
-        if( ctx instanceof CableDesignerParser.PinNumberContext)
+        if (ctx instanceof CableDesignerParser.PinNumberContext)
             return ctx.getText();
         return null;
     }
@@ -495,15 +520,15 @@ public class DocumentParser implements InvocationHandler {
     }
 
     private void processDocumentProperty(CableDesignerParser.DocumentPropertyContext ctx) {
-        String name=extractText(ctx.name.getText()).toLowerCase();
-        String value=extractText(ctx.value.getText());
-        if("project".equals(name))
+        String name = extractText(ctx.name.getText()).toLowerCase();
+        String value = extractText(ctx.value.getText());
+        if ("project".equals(name))
             Services.getDocumentProperties().setProject(value);
-        if("harness".equals(name))
+        if ("harness".equals(name))
             Services.getDocumentProperties().setHarness(value);
-        if("company".equals(name))
+        if ("company".equals(name))
             Services.getDocumentProperties().setCompany(value);
-        if("revision".equals(name))
+        if ("revision".equals(name))
             Services.getDocumentProperties().setRevision(value);
     }
 }
