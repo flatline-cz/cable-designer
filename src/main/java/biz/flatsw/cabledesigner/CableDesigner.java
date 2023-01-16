@@ -58,19 +58,25 @@ public class CableDesigner {
         generator.generate();
     }
 
-    private boolean wireTypeSuits(Signal signal, WireType wireType) {
+    private boolean wireTypeSuits(Signal signal, WireType wireType, List<String> status) {
         return signal.listTerminals()
                 .stream().allMatch(p -> {
                     if (p.getConnector()
                             .getModel()
-                            .findSuitablePinType(p.getPosition(), wireType) == null)
+                            .findSuitablePinType(p.getPosition(), wireType) == null) {
+                        status.add("Unable to find suitable pin on "+p.getConnector().getName()+"/"+p.getName());
                         return false;
+                    }
                     if (p.getConnector()
                             .getModel()
                             .needPinSeal(p.getPosition(), wireType)) {
-                        return p.getConnector()
+                        if(p.getConnector()
                                 .getModel()
-                                .findSuitablePinSeal(p.getPosition(), wireType) != null;
+                                .findSuitablePinSeal(p.getPosition(), wireType) == null) {
+                            status.add("Unable to find suitable pin seal on "+p.getConnector().getName()+"/"+p.getName());
+                            return false;
+                        }
+                        return true;
                     } else
                         return true;
                 });
@@ -93,8 +99,11 @@ public class CableDesigner {
                 .collect(Collectors.toList());
 
         // check each wire type
+        List<String> matchingProgress=new ArrayList<>();
         for (WireType wireType : wireTypes) {
-            if (wireTypeSuits(signal, wireType)) {
+            matchingProgress.add("Wire type: "+wireType.getPartNumber().getPartNumber());
+            List<String> matchingComponentsProgress=new ArrayList<>();
+            if (wireTypeSuits(signal, wireType, matchingComponentsProgress)) {
                 // assign wire type to signal
                 signal.setWireType(wireType);
                 // choose all pins & other stuff
@@ -117,10 +126,17 @@ public class CableDesigner {
                     pin.setSealType(sealType);
                 }
                 return;
+            } else {
+                matchingProgress.addAll(
+                        matchingComponentsProgress
+                                .stream()
+                                .map(s -> " - "+s)
+                                .collect(Collectors.toList()));
             }
         }
 
         System.err.printf("Unable to assign components for signal '%s'%n", signal.getName());
+        matchingProgress.forEach(System.err::println);
         throw new CompilerFailure();
 
 
