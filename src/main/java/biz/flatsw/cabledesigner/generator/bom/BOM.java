@@ -54,7 +54,12 @@ public class BOM extends GeneratorBase<BOM.Formatter> {
             if (pin == null) {
                 PartNumber partNumber = model.getPinCavityPlug(i);
                 if (partNumber != null)
-                    updateBom(bom, partNumber.getPartNumber(), Component.Type.CAVITY_PLUG, 1);
+                    updateBom(
+                            bom,
+                            partNumber.getPartNumber(),
+                            partNumber.getVendor(),
+                            Component.Type.CAVITY_PLUG,
+                            1);
             } else {
                 if (pin.getPinType() != null)
                     updateBom(bom, pin.getPinType());
@@ -71,6 +76,7 @@ public class BOM extends GeneratorBase<BOM.Formatter> {
                 .forEach(part -> updateBom(
                         bom,
                         ((WireChainSegment) part).getWire().getSignal().getWireType().getPartNumber().getPartNumber(),
+                        ((WireChainSegment) part).getWire().getSignal().getWireType().getPartNumber().getVendor(),
                         ((WireChainSegment) part).getWire().getLength()));
     }
 
@@ -97,31 +103,46 @@ public class BOM extends GeneratorBase<BOM.Formatter> {
     }
 
     private void updateBom(Map<String, Material> bom, Component component) {
-        updateBom(bom, component.getPartNumber().getPartNumber(), component.getType(), component.getCount());
+        updateBom(
+                bom,
+                component.getPartNumber().getPartNumber(),
+                component.getPartNumber().getVendor(),
+                component.getType(),
+                component.getCount());
     }
 
-    private void updateBom(Map<String, Material> bom, String partNumber, Component.Type type, int count) {
-        Material material = bom.get(partNumber);
-        if (material == null) {
-            material = new Material(type, partNumber, "pcs");
-            bom.put(partNumber, material);
-        }
-        material.qty += count;
+    private void updateBom(Map<String, Material> bom, String partNumber,
+                           String vendor, Component.Type type, int count) {
+        addMaterial(bom, type, partNumber, vendor, "pcs", count);
     }
 
-    private void updateBom(Map<String, Material> bom, String partNumber, int count) {
-        Material material = bom.get(partNumber);
-        if (material == null) {
-            material = new Material(null, partNumber, "mm");
-            bom.put(partNumber, material);
+    private void addMaterial(Map<String, Material> bom,
+                             Component.Type type,
+                             String partNumber,
+                             String vendor,
+                             String units,
+                             int count) {
+        if("--none--".equals(partNumber))
+            return;
+        String key=partNumber+"##||##"+vendor;
+        Material material=bom.get(key);
+        if(material==null) {
+            material=new Material(type, partNumber, vendor, units);
+            bom.put(key, material);
         }
-        material.qty += count;
+        material.qty+=count;
+    }
+
+    private void updateBom(Map<String, Material> bom, String partNumber,
+                           String vendor, int count) {
+        addMaterial(bom, null, partNumber, vendor, "mm", count);
     }
 
     private void generateMaterialLine(Material material) {
         formatter.formatMaterialLine(
                 material.getType(),
                 material.partNumber,
+                material.vendor,
                 material.units,
                 material.qty);
     }
@@ -139,13 +160,15 @@ public class BOM extends GeneratorBase<BOM.Formatter> {
     static class Material implements Comparable<Material> {
         private final Component.Type type;
         private final String partNumber;
+        private final String vendor;
         private final String units;
         private int qty;
 
-        public Material(Component.Type type, String partNumber, String units) {
+        public Material(Component.Type type, String partNumber, String vendor, String units) {
             this.type = type;
             this.partNumber = partNumber;
             this.units = units;
+            this.vendor = vendor!=null?vendor:"";
         }
 
         @Override
@@ -160,7 +183,8 @@ public class BOM extends GeneratorBase<BOM.Formatter> {
                 if (type.ordinal() > o.type.ordinal())
                     return 1;
             }
-            return partNumber.compareTo(o.partNumber);
+            int i = partNumber.compareTo(o.partNumber);
+            return i != 0 ? i : vendor.compareTo(o.vendor);
         }
 
         public String getType() {
@@ -172,7 +196,7 @@ public class BOM extends GeneratorBase<BOM.Formatter> {
 
     public interface Formatter extends FormatterPlugin {
         // material consumption page
-        void formatMaterialLine(String type, String partNumber, String units, int qty);
+        void formatMaterialLine(String type, String partNumber, String vendor, String units, int qty);
 
     }
 

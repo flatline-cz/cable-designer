@@ -29,10 +29,11 @@ public class TextFormatter extends TextFormatterBase implements BOM.Formatter {
     private String currentConnector;
 
     @Override
-    public void formatMaterialLine(String type, String partNumber, String units, int qty) {
+    public void formatMaterialLine(String type, String partNumber, String vendor, String units, int qty) {
         setPage(PAGE_BOM);
         output.append(fill(type, 15));
         output.append(fill(partNumber, 25));
+        output.append(fill(vendor, 25));
         output.append(fill(String.valueOf(qty), 10, true));
         output.append(units);
         output.append('\n');

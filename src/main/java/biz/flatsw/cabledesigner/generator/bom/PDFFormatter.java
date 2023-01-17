@@ -36,13 +36,15 @@ public class PDFFormatter extends PDFTableFormatter implements BOM.Formatter {
 
     @Override
     public void formatMaterialLine(String type, String partNumber,
+                                   String vendor,
                                    String units, int qty) {
         if(first) {
-            addTable(0.2f, 0.5f, 0.15f, 0.15f);
+            addTable(0.2f, 0.4f, 0.2f, 0.10f, 0.10f);
             setTitle("BOM");
             addHeaderRow();
             addCell("Type");
             addCell("Part number");
+            addCell("Vendor");
             addCell("Quantity");
             addCell("Units");
             first=false;
@@ -50,6 +52,7 @@ public class PDFFormatter extends PDFTableFormatter implements BOM.Formatter {
         addRow();
         addCell(type);
         addCell(partNumber, LEFT);
+        addCell(vendor, LEFT);
         addCell(String.valueOf(qty), RIGHT);
         addCell(units);
     }

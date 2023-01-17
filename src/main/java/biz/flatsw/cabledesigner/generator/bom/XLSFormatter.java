@@ -41,12 +41,12 @@ public class XLSFormatter extends XLSXFormatterBase implements BOM.Formatter {
 
 
     @Override
-    public void formatMaterialLine(String type, String partNumber, String units, int qty) {
+    public void formatMaterialLine(String type, String partNumber, String vendor, String units, int qty) {
         setSection(Section.BOM);
         if(group!=null && !group.equals(type))
             rowIndex++;
         group=type;
-        createDataRow(type, partNumber, qty, units);
+        createDataRow(type, partNumber, vendor, qty, units);
     }
 
     @Override
@@ -106,7 +106,7 @@ public class XLSFormatter extends XLSXFormatterBase implements BOM.Formatter {
             switch (section) {
                 case BOM:
                     sheet = workbook.createSheet("BOM");
-                    createHeaderRow("Type", "Part number", "Quantity", "Units");
+                    createHeaderRow("Type", "Part number", "Vendor", "Quantity", "Units");
                     rowIndex = 2;
                     group=null;
                     break;
