@@ -12,5 +12,7 @@ public interface SignalWiring {
 
     List<WireChain> listChains();
 
+    List<WireChain> listChainsByPin(Pin pin);
+
 
 }

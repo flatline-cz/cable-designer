@@ -45,7 +45,7 @@ public class ComponentAssigner {
                 throw new RuntimeException("Wire class not assigned to signal '" + signalPath.getSignal().getName() + "'");
             crossSection += wireClasses.get(wcIndex).wireSection;
         }
-        return (count == 1) ? crossSection : (crossSection * 0.85f);
+        return (count == 1) ? crossSection : (crossSection * 1.f);
     }
 
     private float computePinInsulationDiameter(Pin pin) {
@@ -59,7 +59,7 @@ public class ComponentAssigner {
             float d = wireClasses.get(wcIndex).insulationDiameter;
             insulationDiameter += d * d;
         }
-        return (float) ((count == 1) ? Math.sqrt(insulationDiameter) : (Math.sqrt(insulationDiameter) * 0.8f));
+        return (float) ((count == 1) ? Math.sqrt(insulationDiameter) : (Math.sqrt(insulationDiameter) * 1.f));
     }
 
     private void checkPinWiring() {

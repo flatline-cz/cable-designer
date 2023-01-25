@@ -185,41 +185,31 @@ public class ConnectorModelImpl extends SymbolBase implements ConnectorModel {
 
     @Override
     public void checkWiring(Pin pin, float crossSection, float insulationDiameter) {
-        ConnectorPinSection section=getSection(pin.getPosition());
+        ConnectorPinSection section = getSection(pin.getPosition());
 
         // wire is over maximum of all pins or seals?
-        boolean allOver=true;
-        for(ConnectorPinComponent pinComponent : section.listPins()) {
-            if(!pinComponent.overMaximum(crossSection, insulationDiameter)) {
-                allOver=false;
+        boolean allOver = true;
+        for (ConnectorPinComponent pinComponent : section.listPins()) {
+            if (!pinComponent.overMaximum(crossSection, insulationDiameter)) {
+                allOver = false;
                 break;
             }
         }
-        for(ConnectorPinComponent pinComponent : section.listPinSeals()) {
-            if(!pinComponent.overMaximum(crossSection, insulationDiameter)) {
-                allOver=false;
+        for (ConnectorPinComponent pinComponent : section.listPinSeals()) {
+            if (!pinComponent.overMaximum(crossSection, insulationDiameter)) {
+                allOver = false;
                 break;
             }
         }
-        if(allOver)
+        if (allOver)
             throw new OverMaximumException(pin, crossSection, insulationDiameter);
 
         // wire is under minimum of all pins and seals?
-        boolean allUnder=true;
-        for(ConnectorPinComponent pinComponent : section.listPins()) {
-            if(!pinComponent.underMinimum(crossSection, insulationDiameter)) {
-                allUnder=false;
-                break;
-            }
-        }
-        for(ConnectorPinComponent pinComponent : section.listPinSeals()) {
-            if(!pinComponent.underMinimum(crossSection, insulationDiameter)) {
-                allUnder=false;
-                break;
-            }
-        }
-        if(allUnder)
+        if (section.listPins().stream().noneMatch(p -> p.suits(crossSection, insulationDiameter)))
             throw new UnderMinimumException(pin, crossSection, insulationDiameter);
+        if (!section.listPinSeals().isEmpty())
+            if (section.listPinSeals().stream().noneMatch(p -> p.suits(crossSection, insulationDiameter)))
+                throw new UnderMinimumException(pin, crossSection, insulationDiameter);
     }
 
     @Override

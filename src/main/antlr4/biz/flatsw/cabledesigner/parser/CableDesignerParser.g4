@@ -30,7 +30,7 @@ wireDefinition: KEYWORD_DEFINE KEYWORD_WIRE
 
 wireDefinitionColor: color=wireColor_rule partNumber_rule;
 
-wireCrossSection_rule: crossSection=(POSITIVE_FLOAT | POSITIVE_NUMBER) KEYWORD_SQMM;
+wireCrossSection_rule: crossSection=(POSITIVE_FLOAT | POSITIVE_NUMBER) units=(KEYWORD_SQMM | KEYWORD_CMA);
 wireInsulation_rule: KEYWORD_INSULATION KEYWORD_DIAMETER diameter=(POSITIVE_FLOAT | POSITIVE_NUMBER) KEYWORD_MM;
 wireColor_rule: color1=COLOR_NAME (PIN_SEPARATOR color2=COLOR_NAME)? ;
 
@@ -78,7 +78,7 @@ cavityPlugPartNumber_rule: KEYWORD_CAVITY KEYWORD_PLUG partNumber_rule ;
 
 pinPartNumber_rule: KEYWORD_PIN partNumber_rule KEYWORD_FOR
                         pinCrossSection_rule
-                        pinInsulation_rule ;
+                        pinInsulation_rule? ;
 
 pinCrossSection_rule:   crossFrom=wireCrossSection_rule
                         SIZE_SEPARATOR

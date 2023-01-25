@@ -52,12 +52,16 @@ public class Wiring extends GeneratorBase<Wiring.Formatter> {
         String sealPartNumber = pin.getSealType() != null
                 ? pin.getSealType().getPartNumber().getPartNumber()
                 : null;
+        WireChainPin.WireJointInfo jointInfo=wireChainPin.getWireJointInfo();
+        String jointText=jointInfo!=null
+                ?String.format("Splice joint (%d/%d)", jointInfo.getSequence(), jointInfo.getCount())
+                :null;
         formatter.formatPin(
                 pin.getConnector().getName(),
                 pin.getName(),
                 pinPartNumber,
                 sealPartNumber,
-                null);  // TODO: rework
+                jointText);
     }
 
     private void generateWireSegment(WireChainSegment wireChainSegment) {

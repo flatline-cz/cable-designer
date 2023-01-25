@@ -19,6 +19,9 @@
 
 package biz.flatsw.cabledesigner.model;
 
+import java.util.Comparator;
+import java.util.List;
+
 public class WireChainPin implements WireChainPart {
     private final WireChain chain;
     private final Pin pin;
@@ -37,5 +40,32 @@ public class WireChainPin implements WireChainPart {
         return pin;
     }
 
+    public WireJointInfo getWireJointInfo() {
+        List<WireChain> chains=chain.getSignalWiring().listChainsByPin(pin);
+        if(chains.size()<2)
+            return null;
+        chains.sort(Comparator.comparing(WireChain::getSequence));
+        int idx=chains.indexOf(chain)+1;
+        return new WireJointInfo(idx, chains.size());
+    }
+
+
+    public static class WireJointInfo {
+        private final int sequence;
+        private final int count;
+
+        public WireJointInfo(int sequence, int count) {
+            this.sequence = sequence;
+            this.count = count;
+        }
+
+        public int getSequence() {
+            return sequence;
+        }
+
+        public int getCount() {
+            return count;
+        }
+    }
 
 }

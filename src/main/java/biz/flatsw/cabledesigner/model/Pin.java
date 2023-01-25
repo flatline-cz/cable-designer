@@ -30,9 +30,6 @@ public interface Pin {
     int getPosition();
     String getName();
 
-    // splice
-    boolean isSplice();
-
     // type
     ConnectorPinComponent getPinType();
     void setPinType(ConnectorPinComponent type);

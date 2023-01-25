@@ -3,10 +3,12 @@ package biz.flatsw.cabledesigner.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class SignalWiringImpl implements SignalWiring {
     private final Signal signal;
     private final List<WireChain> wireChains=new ArrayList<>();
+    private int sequence=1;
 
     public SignalWiringImpl(Signal signal) {
         this.signal = signal;
@@ -24,7 +26,7 @@ public class SignalWiringImpl implements SignalWiring {
 
     @Override
     public WireChain createWireChain(SignalPath signalPath, Pin firstPin) {
-        WireChain chain=new WireChainImpl(this, signalPath, firstPin);
+        WireChain chain=new WireChainImpl(this, signalPath, firstPin, sequence++);
         wireChains.add(chain);
         return chain;
     }
@@ -33,5 +35,12 @@ public class SignalWiringImpl implements SignalWiring {
     public List<WireChain> listChains() {
         // TODO: make dependency tree
         return Collections.unmodifiableList(wireChains);
+    }
+
+    @Override
+    public List<WireChain> listChainsByPin(Pin pin) {
+        return wireChains.stream()
+                .filter(wireChain -> wireChain.hasPin(pin))
+                .collect(Collectors.toList());
     }
 }

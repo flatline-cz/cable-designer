@@ -18,22 +18,14 @@
  ******************************************************************************/
 package biz.flatsw.cabledesigner;
 
-import biz.flatsw.cabledesigner.generator.Generator;
 import biz.flatsw.cabledesigner.generator.GeneratorManager;
-import biz.flatsw.cabledesigner.model.Connector;
-import biz.flatsw.cabledesigner.model.Pin;
 import biz.flatsw.cabledesigner.model.Signal;
-import biz.flatsw.cabledesigner.model.SignalPath;
-import biz.flatsw.cabledesigner.model.defs.ConnectorPinComponent;
-import biz.flatsw.cabledesigner.model.defs.WireType;
 import biz.flatsw.cabledesigner.parser.CompilerFailure;
 import biz.flatsw.cabledesigner.parser.DocumentParser;
-import biz.flatsw.cabledesigner.parser.SourceFileErrorReporter;
 import biz.flatsw.cabledesigner.routing.Router;
 
 import java.io.File;
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class CableDesigner {
     private String fileName;
@@ -57,101 +49,6 @@ public class CableDesigner {
         generator.setGenerators(selectedGenerators, excludedGenerators);
         generator.setOutput(outputDir, fileName, outputFormat);
         generator.generate();
-    }
-
-    private boolean wireTypeSuits(SignalPath signalPath, WireType wireType, List<String> status) {
-        // TODO: rework
-        return true;
-//        return signal.listTerminals()
-//                .stream().allMatch(p -> {
-//                    if (p.getConnector()
-//                            .getModel()
-//                            .findSuitablePinType(p.getPosition(), wireType) == null) {
-//                        status.add("Unable to find suitable pin on "+p.getConnector().getName()+"/"+p.getName());
-//                        return false;
-//                    }
-//                    if (p.getConnector()
-//                            .getModel()
-//                            .needPinSeal(p.getPosition(), wireType)) {
-//                        if(p.getConnector()
-//                                .getModel()
-//                                .findSuitablePinSeal(p.getPosition(), wireType) == null) {
-//                            status.add("Unable to find suitable pin seal on "+p.getConnector().getName()+"/"+p.getName());
-//                            return false;
-//                        }
-//                        return true;
-//                    } else
-//                        return true;
-//                });
-    }
-
-    private void assignComponents(SignalPath signalPath) {
-        // get suitable wire types
-        Set<WireType> wireTypeSet = Services.getDefinitionManager()
-                .findSuitableWireTypes(signalPath.getSpecification());
-
-        if (wireTypeSet.isEmpty()) {
-            SourceFileErrorReporter.showError(
-                    signalPath.getSignal().getDefinitionLocation(),
-                    "Unable to find suitable wire type");
-            throw new CompilerFailure();
-        }
-
-        List<WireType> wireTypes=new ArrayList<>(wireTypeSet)
-                .stream()
-                .sorted(Comparator
-                        .comparing(WireType::getWireSection)
-                        .thenComparing(WireType::getColorCodes))
-                .collect(Collectors.toList());
-
-        // check each wire type
-        List<String> matchingProgress=new ArrayList<>();
-        for (WireType wireType : wireTypes) {
-            matchingProgress.add("Wire type: "+wireType.getPartNumber().getPartNumber());
-            List<String> matchingComponentsProgress=new ArrayList<>();
-            if (wireTypeSuits(signalPath, wireType, matchingComponentsProgress)) {
-                // assign wire type to signal
-                signalPath.setWireType(wireType);
-                // TODO: rework
-//                // choose all pins & other stuff
-//                for (Pin pin : signal.listTerminals()) {
-//                    // pin type
-//                    ConnectorPinComponent pinType = pin
-//                            .getConnector()
-//                            .getModel()
-//                            .findSuitablePinType(
-//                                    pin.getPosition(),
-//                                    wireType);
-//                    pin.setPinType(pinType);
-//                    // seal type
-//                    ConnectorPinComponent sealType = pin
-//                            .getConnector()
-//                            .getModel()
-//                            .findSuitablePinSeal(
-//                                    pin.getPosition(),
-//                                    wireType);
-//                    pin.setSealType(sealType);
-//                }
-                return;
-            } else {
-                matchingProgress.addAll(
-                        matchingComponentsProgress
-                                .stream()
-                                .map(s -> " - "+s)
-                                .collect(Collectors.toList()));
-            }
-        }
-
-        System.err.printf("Unable to assign components for signal '%s'%n",
-                signalPath.getSignal().getName());
-        matchingProgress.forEach(System.err::println);
-        throw new CompilerFailure();
-
-
-    }
-
-    private void assignComponents(Connector connector) {
-
     }
 
     private void processData() {
@@ -178,8 +75,6 @@ public class CableDesigner {
         printMessage("Assigning components...");
         ComponentAssigner assigner=new ComponentAssigner();
         assigner.assignComponents();
-//        Services.getSignalManager().listSignals().forEach(s -> s.getSignalPaths().forEach(this::assignComponents));
-//        Services.getConnectorManager().listConnectors().forEach(this::assignComponents);
 
         printMessage("Model created.");
     }

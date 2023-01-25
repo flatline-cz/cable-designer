@@ -125,7 +125,7 @@ public class BOM extends GeneratorBase<BOM.Formatter> {
                              int count) {
         if ("--none--".equals(partNumber))
             return;
-        String key = partNumber + "##||##" + vendor;
+        String key = partNumber + "##||##" + vendor+"##||##"+type;
         Material material = bom.get(key);
         if (material == null) {
             material = new Material(type, partNumber, vendor, units);

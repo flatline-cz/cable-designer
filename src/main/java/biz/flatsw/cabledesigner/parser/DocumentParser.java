@@ -37,7 +37,6 @@ import java.util.*;
 
 public class DocumentParser implements InvocationHandler {
     private FileManager.InputFile currentFile;
-    private CableDesignerParserListener listener;
     private final static String[] IGNORED_RULES = new String[]{
             "EveryRule", "Path_element", "Document",
             "Device_connector", "Device_signal",
@@ -57,7 +56,7 @@ public class DocumentParser implements InvocationHandler {
     public void parseFile(String file, FileManager.InputFile parent) {
         // file management
         currentFile = Services.getFileManager().addFile(parent, file);
-        listener = (CableDesignerParserListener) Proxy.newProxyInstance(
+        CableDesignerParserListener listener = (CableDesignerParserListener) Proxy.newProxyInstance(
                 CableDesignerParserListener.class.getClassLoader(),
                 new Class[]{CableDesignerParserListener.class},
                 this);
@@ -112,11 +111,6 @@ public class DocumentParser implements InvocationHandler {
                 return null;
             }
 
-//            if ("DeviceAttachment".equals(methodName)) {
-//                processDeviceAttachment((CableDesignerParser.DeviceAttachmentContext) ctx);
-//                return null;
-//            }
-
             if ("Signal".equals(methodName)) {
                 processSignal((CableDesignerParser.SignalContext) ctx);
                 return null;
@@ -144,12 +138,6 @@ public class DocumentParser implements InvocationHandler {
 
     private String extractText(String text) {
         return text.substring(1, text.length() - 1);
-    }
-
-    private Location getLocation(ParserRuleContext ctx, int type) {
-        return new Location(currentFile,
-                ctx.getToken(type, 0).getSymbol().getLine(),
-                ctx.getToken(type, 0).getSymbol().getCharPositionInLine());
     }
 
     private Location getLocation(ParserRuleContext ctx) {
@@ -210,30 +198,6 @@ public class DocumentParser implements InvocationHandler {
                         name, description,
                         modelIdentification);
     }
-
-
-//    private void processDeviceAttachment(CableDesignerParser.DeviceAttachmentContext ctx) {
-//        String deviceName = extractText(ctx.devName.getText());
-//
-//        // TODO: get device definition
-//
-//        // process connector names
-//        List<CableDesignerParser.DeviceAttachmentConnectorContext> connContexts =
-//                ctx.deviceAttachmentConnector();
-//        for (int i = 0; i < connContexts.size(); i++) {
-//            CableDesignerParser.DeviceAttachmentConnectorContext connCtx = connContexts.get(i);
-//            String connName = connCtx.name.getText();
-//            String connDescription = deviceName;
-//            if (connContexts.size() > 1)
-//                connDescription += "/" + (i + 1);
-//
-//            // create connector
-//            Services.getConnectorManager()
-//                    .createConnector(
-//                            getLocation(connCtx),
-//                            connName, connDescription);
-//        }
-//    }
 
 
     private void parsePinNameSequence(CableDesignerParser.PinName_ruleContext ctx,
@@ -360,30 +324,39 @@ public class DocumentParser implements InvocationHandler {
                             parsePartNumber(
                                     pinComponentCtx.pinPartNumber_rule()
                                             .partNumber_rule()),
-                            Float.parseFloat(
-                                    pinComponentCtx.pinPartNumber_rule()
-                                            .pinCrossSection_rule()
-                                            .crossFrom
-                                            .crossSection
-                                            .getText()),
-                            Float.parseFloat(
-                                    pinComponentCtx.pinPartNumber_rule()
-                                            .pinCrossSection_rule()
-                                            .crossTo
-                                            .crossSection
-                                            .getText()),
-                            Float.parseFloat(
-                                    pinComponentCtx.pinPartNumber_rule()
-                                            .pinInsulation_rule()
-                                            .insulationFrom
-                                            .diameter
-                                            .getText()),
-                            Float.parseFloat(
-                                    pinComponentCtx.pinPartNumber_rule()
-                                            .pinInsulation_rule()
-                                            .insulationTo
-                                            .diameter
-                                            .getText()));
+                            parseCrossSection(pinComponentCtx.pinPartNumber_rule().pinCrossSection_rule().crossFrom),
+                            parseCrossSection(pinComponentCtx.pinPartNumber_rule().pinCrossSection_rule().crossTo),
+//                            Float.parseFloat(
+//                                    pinComponentCtx.pinPartNumber_rule()
+//                                            .pinCrossSection_rule()
+//                                            .crossFrom
+//                                            .crossSection
+//                                            .getText()),
+//                            Float.parseFloat(
+//                                    pinComponentCtx.pinPartNumber_rule()
+//                                            .pinCrossSection_rule()
+//                                            .crossTo
+//                                            .crossSection
+//                                            .getText()),
+                            parseInsulation(pinComponentCtx.pinPartNumber_rule()
+                                            .pinInsulation_rule(),
+                                    true),
+                            parseInsulation(pinComponentCtx.pinPartNumber_rule()
+                                            .pinInsulation_rule(),
+                                    false)
+//                            Float.parseFloat(
+//                                    pinComponentCtx.pinPartNumber_rule()
+//                                            .pinInsulation_rule()
+//                                            .insulationFrom
+//                                            .diameter
+//                                            .getText()),
+//                            Float.parseFloat(
+//                                    pinComponentCtx.pinPartNumber_rule()
+//                                            .pinInsulation_rule()
+//                                            .insulationTo
+//                                            .diameter
+//                                            .getText())
+                    );
                 }
                 if (pinComponentCtx.sealPartNumber_rule() != null) {
                     connectorModel.addPinSeal(
@@ -461,11 +434,11 @@ public class DocumentParser implements InvocationHandler {
             SignalSpecification signalSpecification = parseSignalSpecification(
                     signalPathContext.signalSpecification_rule());
 
-            SignalPath signalPath=Services.getSignalManager().createSignalPath(
+            SignalPath signalPath = Services.getSignalManager().createSignalPath(
                     getLocation(signalPathContext),
                     signal,
                     signalSpecification,
-                    signalPathContext.KEYWORD_ORDERED()!=null);
+                    signalPathContext.KEYWORD_ORDERED() != null);
 
             // process each connector pin
             for (CableDesignerParser.SignalConnectionContext connContext
@@ -494,6 +467,18 @@ public class DocumentParser implements InvocationHandler {
 
     private String parseSignalName(CableDesignerParser.SignalNameContext ctx) {
         return extractText(ctx.TEXT().getText());
+    }
+
+    private float parseCrossSection(CableDesignerParser.WireCrossSection_ruleContext ctx) {
+        float value = Float.parseFloat(ctx.crossSection.getText());
+        return "CMA".equals(ctx.units.getText()) ? (value / 1973.525f) : value;
+    }
+
+    private float parseInsulation(CableDesignerParser.PinInsulation_ruleContext ctx, boolean min) {
+        if (ctx == null)
+            return 0;
+        CableDesignerParser.InsulationDiameter_ruleContext inCtx = min ? ctx.insulationFrom : ctx.insulationTo;
+        return Float.parseFloat(inCtx.diameter.getText());
     }
 
     private SignalSpecification parseSignalSpecification(

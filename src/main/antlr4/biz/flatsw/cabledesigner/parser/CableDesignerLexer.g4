@@ -11,6 +11,7 @@ KEYWORD_WITH: 'with';
 KEYWORD_LENGTH: 'length';
 KEYWORD_MM: 'mm';
 KEYWORD_CM: 'cm';
+KEYWORD_CMA: 'CMA';
 KEYWORD_INCLUDE: 'include';
 KEYWORD_USING: 'using';
 KEYWORD_TYPE: 'type';

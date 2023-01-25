@@ -53,13 +53,13 @@ public class ConnectorPinImpl implements ConnectorPinComponent {
 
     @Override
     public boolean suits(float wireSection, float insulationDiameter) {
-        if(!fitsMin(wireSection, crossSectionMin))
+        if (!fitsMin(wireSection, crossSectionMin))
             return false;
-        if(!fitsMax(wireSection, crossSectionMax))
+        if (!fitsMax(wireSection, crossSectionMax))
             return false;
-        if(!fitsMin(insulationDiameter, insulationMin))
+        if (!fitsMin(insulationDiameter, insulationMin))
             return false;
-        if(!fitsMax(insulationDiameter, insulationMax))
+        if (!fitsMax(insulationDiameter, insulationMax))
             return false;
         return true;
     }
@@ -75,11 +75,11 @@ public class ConnectorPinImpl implements ConnectorPinComponent {
     }
 
     private boolean fitsMin(float wire, float component) {
-        return wire-component>-0.001f;
+        return component == 0 || wire - component > -0.001f;
     }
 
     private boolean fitsMax(float wire, float component) {
-        return wire-component<0.001f;
+        return component == 0 || wire - component < 0.001f;
     }
 
 

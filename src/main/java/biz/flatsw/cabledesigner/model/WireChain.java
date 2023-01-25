@@ -37,5 +37,9 @@ public interface WireChain {
 
     List<WireChainPart> listParts();
 
+    int getSequence();
+
+    boolean hasPin(Pin pin);
+
 
 }

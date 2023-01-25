@@ -27,12 +27,15 @@ public class WireChainImpl implements WireChain {
     private final SignalWiring signalWiring;
     private final SignalPath signalPath;
     private final List<WireChainPart> parts=new ArrayList<>();
+    private final int sequence;
 
     public WireChainImpl(SignalWiring signalWiring,
                          SignalPath signalPath,
-                         Pin firstPin) {
+                         Pin firstPin,
+                         int sequence) {
         this.signalWiring = signalWiring;
         this.signalPath=signalPath;
+        this.sequence=sequence;
         parts.add(new WireChainPin(this, firstPin));
     }
 
@@ -71,6 +74,16 @@ public class WireChainImpl implements WireChain {
 
     @Override
     public SignalWiring getSignalWiring() {
-        return null;
+        return signalWiring;
+    }
+
+    @Override
+    public int getSequence() {
+        return sequence;
+    }
+
+    @Override
+    public boolean hasPin(Pin pin) {
+        return parts.stream().anyMatch(p -> (p instanceof WireChainPin) && ((WireChainPin) p).getPin()==pin);
     }
 }
