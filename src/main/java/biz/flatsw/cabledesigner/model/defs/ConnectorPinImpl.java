@@ -52,16 +52,26 @@ public class ConnectorPinImpl implements ConnectorPinComponent {
     }
 
     @Override
-    public boolean suits(WireType wireType) {
-        if(!fitsMin(wireType.getWireSection(), crossSectionMin))
+    public boolean suits(float wireSection, float insulationDiameter) {
+        if(!fitsMin(wireSection, crossSectionMin))
             return false;
-        if(!fitsMax(wireType.getWireSection(), crossSectionMax))
+        if(!fitsMax(wireSection, crossSectionMax))
             return false;
-        if(!fitsMin(wireType.getInsulationDiameter(), insulationMin))
+        if(!fitsMin(insulationDiameter, insulationMin))
             return false;
-        if(!fitsMax(wireType.getInsulationDiameter(), insulationMax))
+        if(!fitsMax(insulationDiameter, insulationMax))
             return false;
         return true;
+    }
+
+    @Override
+    public boolean underMinimum(float crossSection, float insulationDiameter) {
+        return !fitsMin(crossSection, crossSectionMin) || !fitsMin(insulationDiameter, insulationMin);
+    }
+
+    @Override
+    public boolean overMaximum(float crossSection, float insulationDiameter) {
+        return !fitsMax(crossSection, crossSectionMax) || !fitsMax(insulationDiameter, insulationMax);
     }
 
     private boolean fitsMin(float wire, float component) {

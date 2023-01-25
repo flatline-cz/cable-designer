@@ -24,17 +24,26 @@ import java.util.Collections;
 import java.util.List;
 
 public class WireChainImpl implements WireChain {
-    private final Signal signal;
+    private final SignalWiring signalWiring;
+    private final SignalPath signalPath;
     private final List<WireChainPart> parts=new ArrayList<>();
 
-    public WireChainImpl(Signal signal, Pin firstPin) {
-        this.signal = signal;
+    public WireChainImpl(SignalWiring signalWiring,
+                         SignalPath signalPath,
+                         Pin firstPin) {
+        this.signalWiring = signalWiring;
+        this.signalPath=signalPath;
         parts.add(new WireChainPin(this, firstPin));
     }
 
     @Override
     public String getSignalName() {
-        return signal.getName();
+        return signalWiring.getSignal().getName();
+    }
+
+    @Override
+    public SignalPath getSignalPath() {
+        return signalPath;
     }
 
     @Override
@@ -45,18 +54,23 @@ public class WireChainImpl implements WireChain {
 
     @Override
     public void addInterConnectorWire(Connector from, List<Cable> cables) {
-        parts.add(new WireChainSegment(this, new InterConnectorWire(from, cables, signal)));
+        parts.add(new WireChainSegment(this, new InterConnectorWire(from, cables)));
 
     }
 
     @Override
     public void addInterPinConnection(Pin pin1, Pin pin2) {
         // TODO: get length
-        parts.add(new WireChainSegment(this, new InterPinWire(100, signal)));
+        parts.add(new WireChainSegment(this, new InterPinWire(100)));
     }
 
     @Override
     public List<WireChainPart> listParts() {
         return Collections.unmodifiableList(parts);
+    }
+
+    @Override
+    public SignalWiring getSignalWiring() {
+        return null;
     }
 }

@@ -30,7 +30,9 @@ public class TextFormatter extends TextFormatterBase implements Wiring.Formatter
     }
 
     @Override
-    public void formatPin(String connectorName, String pinName, String pinPartNumber, String sealPartNumber) {
+    public void formatPin(String connectorName, String pinName,
+                          String pinPartNumber, String sealPartNumber,
+                          String wireJoint) {
         output.append(fill("  PIN", 8));
         output.append(fill(pinPartNumber, 20));
         output.append(fill((sealPartNumber!=null)?("seal:"+sealPartNumber):"", 25));
@@ -38,6 +40,10 @@ public class TextFormatter extends TextFormatterBase implements Wiring.Formatter
         output.append(connectorName);
         output.append("/");
         output.append(pinName);
+        if(wireJoint!=null) {
+            output.append(". ");
+            output.append(wireJoint);
+        }
         output.append("\n");
     }
 

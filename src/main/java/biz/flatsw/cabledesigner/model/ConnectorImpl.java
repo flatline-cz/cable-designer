@@ -98,32 +98,37 @@ public class ConnectorImpl extends SymbolBase implements Connector, PathNode {
     }
 
     @Override
-    public void attachSignal(Location location, String pinName, Signal signal) {
+    public void attachSignalPath(Location location,
+                                 String pinName,
+                                 SignalPath signalPath) {
         // find pin by name
         int position = findPinByName(location, pinName);
         PinImpl pin = pins.get(position);
 
         // another signal already assigned?
-        if (pin!=null && pin.getSignal() != null) {
-            if (pin.getSignal().getName().equals(signal.getName()))
-                return;
+        if (pin != null && pin.getSignal() != null &&
+                !pin.getSignal().getName().equals(signalPath.getSignal().getName())) {
             // FIXME: more reasonable message
-            SourceFileErrorReporter.showError(location, "Pin has already assigned signal");
-        } else {
-            // assign signal
-            pin=new PinImpl(this, pinNames.get(position), signal.getName());
-            pin.setSignal(signal);
-            pins.set(position, pin);
-            signal.addTerminal(pin);
+            SourceFileErrorReporter.showError(location, "Pin has already assigned a different signal");
         }
+
+        // create pin?
+        if (pin == null) {
+            pin = new PinImpl(this, pinNames.get(position), signalPath.getSignal().getName());
+            pins.set(position, pin);
+        }
+
+        // assign signal
+        pin.addToSignalPath(signalPath);
     }
 
     @Override
-    public List<Pin> findPinsBySignal(Signal signal) {
+    public List<Pin> findPinsBySignalPath(SignalPath signalPath) {
         List<Pin> list = new ArrayList<>();
         for (Pin pin : pins) {
-            if (pin!=null && pin.getSignal() != null && signal.getName().equals(pin.getSignalName()))
+            if (pin != null && pin.getSignalPaths().contains(signalPath)) {
                 list.add(pin);
+            }
         }
         return list;
     }

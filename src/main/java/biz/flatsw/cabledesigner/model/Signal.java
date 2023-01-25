@@ -28,15 +28,17 @@ public interface Signal extends Symbol {
 
     String getDescription();
 
-    boolean isNet();
+//    boolean isNet();
 
-    void addTerminal(Pin terminal);
+//    void addTerminal(Pin terminal);
+//
+//    Collection<Pin> listTerminals();
+//
+//    void setWireType(WireType type);
+//    WireType getWireType();
+//
+//    SignalSpecification getSpecification();
 
-    Collection<Pin> listTerminals();
-
-    void setWireType(WireType type);
-    WireType getWireType();
-
-    SignalSpecification getSpecification();
+    Collection<SignalPath> getSignalPaths();
 
 }

@@ -27,6 +27,8 @@ public interface WireType {
 
     float getInsulationDiameter();
 
+    float getCurrentRating();
+
     boolean hasColor();
     Color getColor();
     String getColorCodes();

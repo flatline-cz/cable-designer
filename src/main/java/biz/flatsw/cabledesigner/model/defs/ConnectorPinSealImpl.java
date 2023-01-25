@@ -47,7 +47,17 @@ public class ConnectorPinSealImpl implements ConnectorPinComponent{
     }
 
     @Override
-    public boolean suits(WireType wireType) {
-        return !(wireType.getInsulationDiameter() < insulationMin) && !(wireType.getInsulationDiameter() > insulationMax);
+    public boolean suits(float wireSection, float insulationDiameter) {
+        return !(insulationDiameter < insulationMin) && !(insulationDiameter > insulationMax);
+    }
+
+    @Override
+    public boolean underMinimum(float crossSection, float insulationDiameter) {
+        return insulationDiameter < insulationMin;
+    }
+
+    @Override
+    public boolean overMaximum(float crossSection, float insulationDiameter) {
+        return insulationDiameter > insulationMax;
     }
 }

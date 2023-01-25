@@ -30,22 +30,14 @@ import java.util.*;
 
 public class SignalImpl extends SymbolBase implements Signal {
     private final String description;
-    private final boolean net;
-
-    private final SignalSpecification specification;
-    private WireType wireType;
-    private final Set<Pin> terminals = new HashSet<>();
+    private List<SignalPath> signalPaths = new ArrayList<>();
 
 
     public SignalImpl(Location definitionLocation,
                       String name,
-                      String description,
-                      boolean net,
-                      SignalSpecification specification) {
+                      String description) {
         super(definitionLocation, name);
-        this.description=description;
-        this.net = net;
-        this.specification = specification;
+        this.description = description;
     }
 
     @Override
@@ -54,32 +46,16 @@ public class SignalImpl extends SymbolBase implements Signal {
     }
 
     @Override
-    public WireType getWireType() {
-        return wireType;
+    public Collection<SignalPath> getSignalPaths() {
+        return Collections.unmodifiableCollection(signalPaths);
+    }
+
+    public void addSignalPath(SignalPath signalPath) {
+        signalPaths.add(signalPath);
     }
 
     @Override
-    public void setWireType(WireType wireType) {
-        this.wireType = wireType;
-    }
-
-    @Override
-    public SignalSpecification getSpecification() {
-        return specification;
-    }
-
-    @Override
-    public boolean isNet() {
-        return net;
-    }
-
-    @Override
-    public void addTerminal(Pin terminal) {
-        terminals.add(terminal);
-    }
-
-    @Override
-    public Collection<Pin> listTerminals() {
-        return Collections.unmodifiableCollection(terminals);
+    public String toString() {
+        return getName()+" ("+description+")";
     }
 }

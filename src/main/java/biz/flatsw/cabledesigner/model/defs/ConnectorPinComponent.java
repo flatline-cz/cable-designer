@@ -23,5 +23,8 @@ public interface ConnectorPinComponent extends Component {
 
     PartNumber getPartNumber();
 
-    boolean suits(WireType wireType);
+    boolean suits(float wireSection, float insulationDiameter);
+
+    boolean underMinimum(float crossSection, float insulationDiameter);
+    boolean overMaximum(float crossSection, float insulationDiameter);
 }

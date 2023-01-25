@@ -27,11 +27,9 @@ public class InterConnectorWire implements Wire {
     private final int length;
     private final List<Cable> cables;
     private final List<PathNode> nodes;
-    private final Signal signal;
 
-    public InterConnectorWire(PathNode firstNode, List<Cable> cables, Signal signal) {
+    public InterConnectorWire(PathNode firstNode, List<Cable> cables) {
         this.cables = cables;
-        this.signal = signal;
         length=cables.stream().mapToInt(Cable::getLength).sum();
         nodes=new ArrayList<>();
         for(int i=0;i<(cables.size()-1);i++) {
@@ -45,11 +43,6 @@ public class InterConnectorWire implements Wire {
     @Override
     public int getLength() {
         return length;
-    }
-
-    @Override
-    public Signal getSignal() {
-        return signal;
     }
 
     @Override

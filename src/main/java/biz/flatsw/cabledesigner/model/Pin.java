@@ -21,12 +21,17 @@ package biz.flatsw.cabledesigner.model;
 
 import biz.flatsw.cabledesigner.model.defs.ConnectorPinComponent;
 
+import java.util.Collection;
+
 public interface Pin {
 
     // identification
     Connector getConnector();
     int getPosition();
     String getName();
+
+    // splice
+    boolean isSplice();
 
     // type
     ConnectorPinComponent getPinType();
@@ -38,4 +43,5 @@ public interface Pin {
     String getSignalName();
     Signal getSignal();
 
+    Collection<SignalPath> getSignalPaths();
 }

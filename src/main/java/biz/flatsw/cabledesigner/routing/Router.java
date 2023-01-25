@@ -148,43 +148,83 @@ public class Router {
     }
 
     public void route(Signal signal) {
+        System.out.println("Routing signal: " + signal);
+
+        for (SignalPath signalPath : signal.getSignalPaths()) {
+            route(signalPath);
+        }
+    }
+
+    public void route(SignalPath signalPath) {
+        System.out.println("Routing signal path");
+
         // get a list of connectors
-        for (Pin pin : signal.listTerminals()) {
+        List<String> connNameList = new ArrayList<>();
+        for (Pin pin : signalPath.listTerminals()) {
             String connName = pin.getConnector().getName();
+            if(!connNameList.contains(connName))
+                connNameList.add(connName);
             List<Pin> conn = terminals.computeIfAbsent(connName, k -> new ArrayList<>());
             conn.add(pin);
         }
-        List<String> connNameList = new ArrayList<>(terminals.keySet());
+        System.out.println("- connectors: " + connNameList);
 
-        // route 1st 2 connectors
-        Set<String> targets = new TreeSet<>(connNameList);
-        String connName = connNameList.get(0);
-        targets.remove(connName);
-        List<RouteNode> route = routeAny(connName, targets);
-        updateTargets(targets, route);
+        if (connNameList.size() < 2)
+            throw new RuntimeException("Invalid signal '" + signalPath.getSignal() + "', unable to route");
 
-        // route all other connectors
-        while (!targets.isEmpty()) {
-            List<RouteNode> routeFromStart = routeAny(
-                    ((RouteNodeTerminal) route.get(0)).getNode().getName(),
-                    targets);
-            List<RouteNode> routeFromEnd = routeAny(
-                    ((RouteNodeTerminal) route.get(route.size() - 1)).getNode().getName(),
-                    targets);
-            if (countLength(routeFromStart) < countLength(routeFromEnd)) {
-                // prepend route
-                List<RouteNode> list = new ArrayList<>();
-                for (int i = routeFromStart.size() - 1; i > 0; i--)
-                    list.add(routeFromStart.get(i));
-                list.addAll(route);
-                route = list;
-            } else {
-                // append route
-                for (int i = 1; i < routeFromEnd.size(); i++)
-                    route.add(routeFromEnd.get(i));
+        List<RouteNode> route = null;
+
+        // ordered?
+        if (signalPath.isOrdered()) {
+            String startConnName = connNameList.get(0);
+            for (int targetIdx = 1; targetIdx < connNameList.size(); targetIdx++) {
+                Set<String> targets = new TreeSet<>();
+                String targetConnName = connNameList.get(targetIdx);
+                targets.add(targetConnName);
+                if (route == null)
+                    route = routeAny(startConnName, targets);
+                else
+                    route.addAll(routeAny(startConnName, targets));
+                updateTargets(targets, route);
+                startConnName = targetConnName;
             }
+
+        } else {
+            // route 1st 2 connectors
+            Set<String> targets = new TreeSet<>(connNameList);
+            String connName = connNameList.get(0);
+            targets.remove(connName);
+            route = routeAny(connName, targets);
             updateTargets(targets, route);
+
+            // route all other connectors
+            while (!targets.isEmpty()) {
+                List<RouteNode> routeFromStart = routeAny(
+                        ((RouteNodeTerminal) route.get(0)).getNode().getName(),
+                        targets);
+                List<RouteNode> routeFromEnd = routeAny(
+                        ((RouteNodeTerminal) route.get(route.size() - 1)).getNode().getName(),
+                        targets);
+                if (countLength(routeFromStart) < countLength(routeFromEnd)) {
+                    // prepend route
+                    List<RouteNode> list = new ArrayList<>();
+                    for (int i = routeFromStart.size() - 1; i > 0; i--)
+                        list.add(routeFromStart.get(i));
+                    list.addAll(route);
+                    route = list;
+                } else {
+                    // append route
+                    for (int i = 1; i < routeFromEnd.size(); i++)
+                        route.add(routeFromEnd.get(i));
+                }
+                updateTargets(targets, route);
+            }
         }
+        System.out.println(dumpRoute(route));
+
+        SignalWiring signalWiring=Services
+                .getSignalManager()
+                .createSignalWiring(signalPath.getSignal());
 
         // create final route (map connector pins)
         WireChain wireChain = null;
@@ -198,10 +238,10 @@ public class Router {
                 if (pathNode instanceof Connector) {
                     Connector connectorNode = (Connector) pathNode;
                     Pin previousPin = null;
-                    for (Pin pin : connectorNode.findPinsBySignal(signal)) {
+                    for (Pin pin : connectorNode.findPinsBySignalPath(signalPath)) {
                         // first pin at all?
                         if (wireChain == null) {
-                            wireChain = Services.getSignalManager().createWireChain(signal, pin);
+                            wireChain = signalWiring.createWireChain(signalPath, pin);
                         } else {
                             // not a first pin in the connector?
                             if (previousPin != null) {

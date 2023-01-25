@@ -106,8 +106,10 @@ deviceAttachmentConnector: name=CONNECTOR_NAME;
 // signal definition
 signalName: SIGNAL_NAME_FORM1 | SIGNAL_NAME_FORM2 | TEXT;
 signal: KEYWORD_SIGNAL signalName KEYWORD_IS description=TEXT
-        signalSpecification_rule
-        KEYWORD_CONNECTS signalConnection signalConnection+;
+        signalPath+;
+
+signalPath: signalSpecification_rule
+            KEYWORD_CONNECTS KEYWORD_ORDERED? signalConnection signalConnection+;
 
 signalSpecification_rule: currentRating_rule wireColor_rule? ;
 

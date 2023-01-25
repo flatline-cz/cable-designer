@@ -51,7 +51,7 @@ public class DocumentParser implements InvocationHandler {
             "PinCrossSection", "PinInsulation",
             "InsulationDiameter", "SealPartNumber",
             "PinName", "PinNumber", "PinNaming", "PinName_section", "PinName_sectionName",
-            "PinSection", "CavityPlugPartNumber"
+            "PinSection", "CavityPlugPartNumber", "SignalPath"
     };
 
     public void parseFile(String file, FileManager.InputFile parent) {
@@ -249,10 +249,10 @@ public class DocumentParser implements InvocationHandler {
         String endText = extractText(ctx.to.getText());
 
         // numeric?
-        if(startText.matches("[0-9]+") && endText.matches("[0-9]+")) {
-            int i=Integer.parseInt(startText);
-            int last=Integer.parseInt(endText);
-            for(;i<=last;i++)
+        if (startText.matches("[0-9]+") && endText.matches("[0-9]+")) {
+            int i = Integer.parseInt(startText);
+            int last = Integer.parseInt(endText);
+            for (; i <= last; i++)
                 pinNames.add(String.valueOf(i));
             return;
         }
@@ -308,10 +308,10 @@ public class DocumentParser implements InvocationHandler {
         if (ctx.pinNaming_rule() != null) {
             for (CableDesignerParser.PinName_section_ruleContext sectionCtx
                     : ctx.pinNaming_rule().pinName_section_rule()) {
-                List<String> pins=new ArrayList<>();
+                List<String> pins = new ArrayList<>();
                 parsePinNameSequence(sectionCtx.pinName_rule(), pins);
-                connectorModel.setPinNames(sectionCtx.section!=null?
-                        extractText(sectionCtx.section.name.getText()):null, pins);
+                connectorModel.setPinNames(sectionCtx.section != null ?
+                        extractText(sectionCtx.section.name.getText()) : null, pins);
             }
         } else {
             connectorModel.setDefaultPinNames();
@@ -342,9 +342,9 @@ public class DocumentParser implements InvocationHandler {
             String sectionName = sectionCtx.section != null
                     ? extractText(sectionCtx.section.TEXT().getText())
                     : null;
-            Location location=getLocation(sectionCtx);
+            Location location = getLocation(sectionCtx);
 
-            if(sectionCtx.cavityPlugPartNumber_rule()!=null) {
+            if (sectionCtx.cavityPlugPartNumber_rule() != null) {
                 connectorModel.addCavityPlug(
                         location,
                         sectionName,
@@ -446,21 +446,41 @@ public class DocumentParser implements InvocationHandler {
 
     private void processSignal(CableDesignerParser.SignalContext ctx) {
 
+        // create signal
         Signal signal = Services.getSignalManager().createSignal(
                 getLocation(ctx),
                 parseSignalName(ctx.signalName()),
-                extractText(ctx.description.getText()),
-                parseSignalSpecification(ctx.signalSpecification_rule()));
+                extractText(ctx.description.getText()));
 
-        for (CableDesignerParser.SignalConnectionContext connContext
-                : ctx.signalConnection()) {
-            Connector connector = Services
-                    .getConnectorManager()
-                    .referenceConnector(
-                            getLocation(connContext),
-                            connContext.conn.getText());
 
-            connector.attachSignal(getLocation(connContext), parsePinName(connContext.pinRef), signal);
+        //        parseSignalSpecification(ctx.signalSpecification_rule()));
+
+        // process each signal path
+        for (CableDesignerParser.SignalPathContext signalPathContext
+                : ctx.signalPath()) {
+            SignalSpecification signalSpecification = parseSignalSpecification(
+                    signalPathContext.signalSpecification_rule());
+
+            SignalPath signalPath=Services.getSignalManager().createSignalPath(
+                    getLocation(signalPathContext),
+                    signal,
+                    signalSpecification,
+                    signalPathContext.KEYWORD_ORDERED()!=null);
+
+            // process each connector pin
+            for (CableDesignerParser.SignalConnectionContext connContext
+                    : signalPathContext.signalConnection()) {
+                Connector connector = Services
+                        .getConnectorManager()
+                        .referenceConnector(
+                                getLocation(connContext),
+                                connContext.conn.getText());
+
+                connector.attachSignalPath(
+                        getLocation(connContext),
+                        parsePinName(connContext.pinRef),
+                        signalPath);
+            }
         }
     }
 

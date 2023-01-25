@@ -22,11 +22,16 @@ package biz.flatsw.cabledesigner.model;
 
 import biz.flatsw.cabledesigner.model.defs.ConnectorPinComponent;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 public class PinImpl implements Pin {
     private final Connector connector;
     private final PinName name;
     private final String signalName;
-    private Signal signal;
+    private Set<SignalPath> signalPaths=new HashSet<>();
     private ConnectorPinComponent pinType;
     private ConnectorPinComponent sealType;
 
@@ -53,18 +58,13 @@ public class PinImpl implements Pin {
 
     @Override
     public String getSignalName() {
-        return signal != null ? signal.getName() : signalName;
+        return getSignal() != null ? getSignal().getName() : signalName;
     }
 
     @Override
     public Signal getSignal() {
-        return signal;
+        return signalPaths.iterator().next().getSignal();
     }
-
-    public void setSignal(Signal signal) {
-        this.signal = signal;
-    }
-
     @Override
     public ConnectorPinComponent getPinType() {
         return pinType;
@@ -83,5 +83,19 @@ public class PinImpl implements Pin {
     @Override
     public void setSealType(ConnectorPinComponent sealType) {
         this.sealType = sealType;
+    }
+
+    @Override
+    public Collection<SignalPath> getSignalPaths() {
+        return Collections.unmodifiableCollection(signalPaths);
+    }
+
+    void addToSignalPath(SignalPath signalPath) {
+        signalPaths.add(signalPath);
+        signalPath.addTerminal(this);
+    }
+
+    public String toString() {
+        return connector.getName()+"/"+getName();
     }
 }

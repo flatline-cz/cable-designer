@@ -33,12 +33,12 @@ public interface Connector extends PathNode {
     ConnectorModel getModel();
 
     // signal assignment
-    void attachSignal(Location location, String pinName, Signal signal);
+    void attachSignalPath(Location location, String pinName, SignalPath signal);
 
     List<Pin> listPins();
 
     // find pins by signal
-    List<Pin> findPinsBySignal(Signal signal);
+    List<Pin> findPinsBySignalPath(SignalPath signalPath);
 
     // physical layout
     Cable getCable();

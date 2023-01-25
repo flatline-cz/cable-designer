@@ -31,4 +31,9 @@ public class WireChainSegment implements WireChainPart {
     public Wire getWire() {
         return wire;
     }
+
+    @Override
+    public WireChain getWireChain() {
+        return chain;
+    }
 }

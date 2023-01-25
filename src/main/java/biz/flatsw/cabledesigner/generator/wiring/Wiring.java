@@ -56,12 +56,13 @@ public class Wiring extends GeneratorBase<Wiring.Formatter> {
                 pin.getConnector().getName(),
                 pin.getName(),
                 pinPartNumber,
-                sealPartNumber);
+                sealPartNumber,
+                null);  // TODO: rework
     }
 
     private void generateWireSegment(WireChainSegment wireChainSegment) {
         Wire wire = wireChainSegment.getWire();
-        WireType wireType = wire.getSignal().getWireType();
+        WireType wireType=wireChainSegment.getWireChain().getSignalPath().getWireType();
 
         formatter.formatWire(
                 wire.getLength(),
@@ -74,17 +75,19 @@ public class Wiring extends GeneratorBase<Wiring.Formatter> {
                         .collect(Collectors.joining(" ")));
     }
 
-    private void generateWiring(WireChain wireChain) {
-        formatter.formatSignal(wireChain.getSignalName());
+    private void generateWiring(SignalWiring signalWiring) {
+        formatter.formatSignal(signalWiring.getSignalName());
 
-        for (WireChainPart chainPart : wireChain.listParts()) {
-            if (chainPart instanceof WireChainPin) {
-                generatePin((WireChainPin) chainPart);
-                continue;
-            }
-            if (chainPart instanceof WireChainSegment) {
-                generateWireSegment((WireChainSegment) chainPart);
-                continue;
+        for(WireChain wireChain : signalWiring.listChains()) {
+            for (WireChainPart chainPart : wireChain.listParts()) {
+                if (chainPart instanceof WireChainPin) {
+                    generatePin((WireChainPin) chainPart);
+                    continue;
+                }
+                if (chainPart instanceof WireChainSegment) {
+                    generateWireSegment((WireChainSegment) chainPart);
+                    continue;
+                }
             }
         }
     }
@@ -118,7 +121,7 @@ public class Wiring extends GeneratorBase<Wiring.Formatter> {
     @Override
     protected void generateContent() {
         Services.getSignalManager()
-                .listWireChains()
+                .listSignalWirings()
                 .forEach(this::generateWiring);
 
         Services.getConnectorManager()
@@ -131,7 +134,8 @@ public class Wiring extends GeneratorBase<Wiring.Formatter> {
         // wires
         void formatSignal(String signalName);
 
-        void formatPin(String connectorName, String pinName, String pinPartNumber, String sealPartNumber);
+        void formatPin(String connectorName, String pinName, String pinPartNumber,
+                       String sealPartNumber, String wireJoint);
 
         void formatWire(int length, String colorCode, String partNumber, float crossSection, String pathNodes);
 

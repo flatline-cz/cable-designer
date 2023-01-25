@@ -39,12 +39,12 @@ public class PDFFormatter extends PDFTableFormatter implements Signals.Formatter
     public void formatSignal(String signalName, String signalDescription,
                              float crossSection, String colorName, String connectors) {
         if(first) {
-            addTable(0.1f, 0.4f, 0.2f, 0.3f);
-//            setTitle("Signals");
+            addTable(0.1f, 0.35f, 0.13f, 0.12f, 0.3f);
+            setTitle("Signals");
             addHeaderRow();
             addCell("Signal");
             addCell("Description");
-//            addCell("Cross-section");
+            addCell("Wire");
             addCell("Color");
             addCell("Connectors");
             first=false;
@@ -52,7 +52,7 @@ public class PDFFormatter extends PDFTableFormatter implements Signals.Formatter
         addRow();
         addCell(signalName);
         addCell(signalDescription, LEFT);
-//        addCell(String.format("%.2fmm²", crossSection));
+        addCell(String.format("%.2fmm²", crossSection));
         addCell(colorName);
         addCell(connectors.replace(",", ""), LEFT);
     }

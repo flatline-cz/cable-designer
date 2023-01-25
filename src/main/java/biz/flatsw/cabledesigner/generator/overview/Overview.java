@@ -64,11 +64,24 @@ public class Overview extends GeneratorBase<Overview.Formatter> {
             String pinName = connector.getModel().getPinName(i);
             if (pin == null)
                 formatter.formatConnectorSignal(connector.getName(), pinName);
-            else
+            else {
+                StringBuilder builder=new StringBuilder();
+                pin.getSignalPaths().stream().map(SignalPath::getWireType).forEach(w -> {
+                    builder.append(", ");
+                    if(w!=null) {
+                        builder.append(String.format("%.2fmm²", w.getWireSection()));
+                        builder.append(" ");
+                        builder.append(w.getColor().getNames());
+                    } else {
+                        builder.append("? ");
+                    }
+                });
+                builder.delete(0, 2);
+
                 formatter.formatConnectorSignal(connector.getName(), pinName,
                         pin.getSignalName(), pin.getSignal().getDescription(),
-                        pin.getSignal().getWireType().getWireSection(),
-                        pin.getSignal().getWireType().getColor().getNames());
+                        builder.toString());
+            }
         }
     }
 
@@ -103,7 +116,7 @@ public class Overview extends GeneratorBase<Overview.Formatter> {
         // connector signals page
         void formatConnectorSignal(String connectorName, String pinName,
                                    String signalName, String signalDescription,
-                                   float crossSection, String colorName);
+                                   String wireDescription);
 
         void formatConnectorSignal(String connectorName, String pinName);
 

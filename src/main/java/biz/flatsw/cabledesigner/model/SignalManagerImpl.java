@@ -27,38 +27,50 @@ import biz.flatsw.cabledesigner.parser.SourceFileErrorReporter;
 import java.util.*;
 
 public class SignalManagerImpl implements SignalManager {
-    private final Map<String, SignalImpl> signalMap=new TreeMap<>();
-    private final List<WireChain> wireChains=new ArrayList<>();
+    private final Map<String, SignalImpl> signalMap = new TreeMap<>();
+    private final Map<String, SignalWiring> signalWirings = new TreeMap<>();
 
     @Override
-    public WireChain createWireChain(Signal signal, Pin firstPin) {
-        WireChain chain=new WireChainImpl(signal, firstPin);
-        wireChains.add(chain);
-        return chain;
+    public SignalWiring createSignalWiring(Signal signal) {
+        SignalWiring wiring=signalWirings.get(signal.getName());
+        if(wiring==null) {
+            wiring=new SignalWiringImpl(signal);
+            signalWirings.put(signal.getName(), wiring);
+        }
+        return wiring;
     }
 
     @Override
-    public List<WireChain> listWireChains() {
-        return Collections.unmodifiableList(wireChains);
+    public Collection<SignalWiring> listSignalWirings() {
+        return Collections.unmodifiableCollection(signalWirings.values());
     }
 
     @Override
     public Signal createSignal(Location location,
-                               String name, String description,
-                               SignalSpecification specification) {
+                               String name, String description) {
         // check redefinition
-        SignalImpl signal=signalMap.get(name);
-        if(signal!=null) {
+        SignalImpl signal = signalMap.get(name);
+        if (signal != null) {
             SourceFileErrorReporter.showSymbolRedefinitionError(
                     location, signal, "signal");
             return null;
         }
 
-        signal=new SignalImpl(location, name, description, false, specification);
+        signal = new SignalImpl(location, name, description);
         signalMap.put(name, signal);
         return signal;
     }
 
+    @Override
+    public SignalPath createSignalPath(Location location,
+                                       Signal signal,
+                                       SignalSpecification signalSpecification,
+                                       boolean ordered) {
+        SignalPath signalPath=new SignalPathImpl(
+                ordered, signalSpecification, signal);
+        ((SignalImpl)signal).addSignalPath(signalPath);
+        return signalPath;
+    }
 
     @Override
     public Collection<Signal> listSignals() {

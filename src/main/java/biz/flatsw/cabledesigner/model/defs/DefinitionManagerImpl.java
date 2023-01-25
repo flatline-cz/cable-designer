@@ -92,4 +92,9 @@ public class DefinitionManagerImpl implements DefinitionManager {
                 .filter(wireType -> wireType.matches(signalSpecification))
                 .collect(Collectors.toSet());
     }
+
+    @Override
+    public Collection<WireType> listWireTypes() {
+        return Collections.unmodifiableCollection(wireTypes);
+    }
 }

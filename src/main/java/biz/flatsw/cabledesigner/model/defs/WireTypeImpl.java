@@ -85,4 +85,9 @@ public class WireTypeImpl implements WireType {
             return false;
         return signalSpecification.getColor() == null || signalSpecification.getColor().equals(color);
     }
+
+    @Override
+    public float getCurrentRating() {
+        return currentRating;
+    }
 }

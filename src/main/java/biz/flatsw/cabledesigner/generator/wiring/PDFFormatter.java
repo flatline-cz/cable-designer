@@ -52,15 +52,19 @@ public class PDFFormatter extends PDFTableFormatter implements Wiring.Formatter 
 
     @Override
     public void formatPin(String connectorName, String pinName,
-                          String pinPartNumber, String sealPartNumber) {
+                          String pinPartNumber, String sealPartNumber,
+                          String wireJoint) {
         addRow();
         addCell("pin");
         addCell(pinPartNumber, LEFT);
-        addCell((sealPartNumber!=null)?("seal:"+sealPartNumber):"", LEFT);
+        addCell((sealPartNumber != null) ? ("seal:" + sealPartNumber) : "", LEFT);
         addCell("");
         addCell("");
         addCell("");
-        addCell(String.format("Inserted into %s/%s", connectorName, pinName), LEFT);
+        String note = String.format("Inserted into %s/%s", connectorName, pinName);
+        if (wireJoint != null)
+            note += ". " + wireJoint;
+        addCell(note, LEFT);
     }
 
     @Override
@@ -70,7 +74,7 @@ public class PDFFormatter extends PDFTableFormatter implements Wiring.Formatter 
         addCell(partNumber, LEFT);
         addCell("");
         addCell(String.format("%dmm", length), RIGHT);
-        addCell(String.format("%.2fmm²", crossSection), RIGHT,false);
+        addCell(String.format("%.2fmm²", crossSection), RIGHT, false);
         addCell(colorCode);
         addCell((pathNodes != null && !pathNodes.isEmpty())
                 ? String.format(String.format("Through %s", pathNodes))

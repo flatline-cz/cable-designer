@@ -28,7 +28,14 @@ public class WireChainPin implements WireChainPart {
         this.pin = pin;
     }
 
+    @Override
+    public WireChain getWireChain() {
+        return chain;
+    }
+
     public Pin getPin() {
         return pin;
     }
+
+
 }

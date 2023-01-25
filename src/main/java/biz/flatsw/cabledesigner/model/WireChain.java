@@ -23,7 +23,11 @@ import java.util.List;
 
 public interface WireChain {
 
+    SignalWiring getSignalWiring();
+
     String getSignalName();
+
+    SignalPath getSignalPath();
 
     void addPin(Pin pin);
 

@@ -46,6 +46,8 @@ public interface DefinitionManager {
 
     Set<WireType> findSuitableWireTypes(SignalSpecification signalSpecification);
 
+    Collection<WireType> listWireTypes();
+
 
 
 }

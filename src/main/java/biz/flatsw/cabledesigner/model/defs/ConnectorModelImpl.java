@@ -19,6 +19,9 @@
 
 package biz.flatsw.cabledesigner.model.defs;
 
+import biz.flatsw.cabledesigner.model.OverMaximumException;
+import biz.flatsw.cabledesigner.model.Pin;
+import biz.flatsw.cabledesigner.model.UnderMinimumException;
 import biz.flatsw.cabledesigner.parser.Location;
 import biz.flatsw.cabledesigner.parser.SourceFileErrorReporter;
 import biz.flatsw.cabledesigner.parser.SymbolBase;
@@ -151,8 +154,8 @@ public class ConnectorModelImpl extends SymbolBase implements ConnectorModel {
     }
 
     @Override
-    public ConnectorPinComponent findSuitablePinType(int position, WireType wireType) {
-        return getSection(position).findMatchingPin(wireType);
+    public ConnectorPinComponent findSuitablePinType(int position, float wireSection, float insulationDiameter) {
+        return getSection(position).findMatchingPin(wireSection, insulationDiameter);
     }
 
     @Override
@@ -176,8 +179,47 @@ public class ConnectorModelImpl extends SymbolBase implements ConnectorModel {
     }
 
     @Override
-    public ConnectorPinComponent findSuitablePinSeal(int position, WireType wireType) {
-        return getSection(position).findMatchingSeal(wireType);
+    public ConnectorPinComponent findSuitablePinSeal(int position, float wireSection, float insulationDiameter) {
+        return getSection(position).findMatchingSeal(wireSection, insulationDiameter);
+    }
+
+    @Override
+    public void checkWiring(Pin pin, float crossSection, float insulationDiameter) {
+        ConnectorPinSection section=getSection(pin.getPosition());
+
+        // wire is over maximum of all pins or seals?
+        boolean allOver=true;
+        for(ConnectorPinComponent pinComponent : section.listPins()) {
+            if(!pinComponent.overMaximum(crossSection, insulationDiameter)) {
+                allOver=false;
+                break;
+            }
+        }
+        for(ConnectorPinComponent pinComponent : section.listPinSeals()) {
+            if(!pinComponent.overMaximum(crossSection, insulationDiameter)) {
+                allOver=false;
+                break;
+            }
+        }
+        if(allOver)
+            throw new OverMaximumException(pin, crossSection, insulationDiameter);
+
+        // wire is under minimum of all pins and seals?
+        boolean allUnder=true;
+        for(ConnectorPinComponent pinComponent : section.listPins()) {
+            if(!pinComponent.underMinimum(crossSection, insulationDiameter)) {
+                allUnder=false;
+                break;
+            }
+        }
+        for(ConnectorPinComponent pinComponent : section.listPinSeals()) {
+            if(!pinComponent.underMinimum(crossSection, insulationDiameter)) {
+                allUnder=false;
+                break;
+            }
+        }
+        if(allUnder)
+            throw new UnderMinimumException(pin, crossSection, insulationDiameter);
     }
 
     @Override

@@ -19,6 +19,8 @@
 
 package biz.flatsw.cabledesigner.model.defs;
 
+import java.util.List;
+
 public interface ConnectorPinSection {
 
     PartNumber getCavityPlug();
@@ -29,11 +31,15 @@ public interface ConnectorPinSection {
                     float crossSectionMin, float crossSectionMax,
                     float insulationMin, float insulationMax);
 
-    ConnectorPinComponent findMatchingPin(WireType wireType);
+    ConnectorPinComponent findMatchingPin(float wireSection, float insulationDiameter);
 
     void addPinSeal(PartNumber sealPartNumber,
                     float insulationMin, float insulationMax);
-    ConnectorPinComponent findMatchingSeal(WireType wireType);
+    ConnectorPinComponent findMatchingSeal(float wireSection, float insulationDiameter);
     boolean needPinSeal(WireType wireType);
+
+    List<ConnectorPinComponent> listPins();
+    List<ConnectorPinComponent> listPinSeals();
+
 
 }

@@ -27,13 +27,17 @@ import java.util.List;
 public interface SignalManager {
 
     Signal createSignal(Location location,
-                        String name, String description,
-                        SignalSpecification specification);
+                        String name, String description);
+
+    SignalPath createSignalPath(Location location,
+                                Signal signal,
+                                SignalSpecification signalSpecification,
+                                boolean ordered);
 
     Collection<Signal> listSignals();
 
-    WireChain createWireChain(Signal signal, Pin firstPin);
+    SignalWiring createSignalWiring(Signal signal);
 
-    List<WireChain> listWireChains();
+    Collection<SignalWiring> listSignalWirings();
 
 }

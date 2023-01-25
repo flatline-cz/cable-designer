@@ -25,8 +25,6 @@ public interface Wire {
 
     int getLength();
 
-    Signal getSignal();
-
     List<PathNode> getPath();
 
 }

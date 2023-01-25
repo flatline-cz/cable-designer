@@ -24,6 +24,7 @@ import biz.flatsw.cabledesigner.generator.FormatterPlugin;
 import biz.flatsw.cabledesigner.generator.GeneratorBase;
 import biz.flatsw.cabledesigner.model.PathNode;
 import biz.flatsw.cabledesigner.model.Signal;
+import biz.flatsw.cabledesigner.model.SignalPath;
 
 import java.util.stream.Collectors;
 
@@ -48,15 +49,19 @@ public class Signals extends GeneratorBase<Signals.Formatter> {
     }
 
     private void generateSignal(Signal signal) {
+        signal.getSignalPaths().forEach(this::generateSignal);
+    }
+
+    private void generateSignal(SignalPath signalPath) {
         formatter.formatSignal(
-                signal.getName(),
-                signal.getDescription(),
-                signal.getWireType().getWireSection(),
-                signal.getWireType().getColor().getNames(),
+                signalPath.getSignal().getName(),
+                signalPath.getSignal().getDescription(),
+                signalPath.getWireType().getWireSection(),
+                signalPath.getWireType().getColor().getNames(),
                 Services.getConnectorManager()
                         .listConnectors()
                         .stream()
-                        .filter(c -> !c.findPinsBySignal(signal).isEmpty())
+                        .filter(c -> !c.findPinsBySignalPath(signalPath).isEmpty())
                         .map(PathNode::getName)
                         .collect(Collectors.joining(", ")));
     }

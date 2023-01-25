@@ -24,21 +24,14 @@ import java.util.List;
 
 public class InterPinWire implements Wire {
     private final int length;
-    private final Signal signal;
 
-    public InterPinWire(int length, Signal signal) {
+    public InterPinWire(int length) {
         this.length = length;
-        this.signal = signal;
     }
 
     @Override
     public int getLength() {
         return length;
-    }
-
-    @Override
-    public Signal getSignal() {
-        return signal;
     }
 
     @Override

@@ -54,12 +54,17 @@ public class XLSFormatter extends XLSXFormatterBase implements Wiring.Formatter 
     }
 
     @Override
-    public void formatPin(String connectorName, String pinName, String pinPartNumber, String sealPartNumber) {
+    public void formatPin(String connectorName, String pinName,
+                          String pinPartNumber, String sealPartNumber,
+                          String wireJoint) {
         setSection(Section.WIRES);
+        String note = String.format("Inserted into %s/%s", connectorName, pinName);
+        if (wireJoint != null)
+            note += ". " + wireJoint;
         createDataRow("pin",
                 pinPartNumber, sealPartNumber,
                 null, null, null,
-                String.format(String.format("Inserted into %s/%s", connectorName, pinName)));
+                note);
     }
 
     @Override

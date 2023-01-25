@@ -54,7 +54,7 @@ public class XLSFormatter extends XLSXFormatterBase implements Overview.Formatte
     @Override
     public void formatConnectorSignal(String connectorName, String pinName,
                                       String signalName, String signalDescription,
-                                      float crossSection, String colorName) {
+                                      String wireDescription) {
         setSection(Section.CONNECTOR_SIGNALS);
         if(group!=null && !group.equals(connectorName))
             rowIndex++;
@@ -62,8 +62,8 @@ public class XLSFormatter extends XLSXFormatterBase implements Overview.Formatte
         createDataRow(
                 connectorName, pinName,
                 signalName, signalDescription,
-                String.format("%.2fmm²", crossSection),
-                colorName);
+//                String.format("%.2fmm²", crossSection),
+                wireDescription);
     }
 
     @Override

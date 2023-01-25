@@ -20,4 +20,6 @@
 package biz.flatsw.cabledesigner.model;
 
 public interface WireChainPart {
+
+    WireChain getWireChain();
 }

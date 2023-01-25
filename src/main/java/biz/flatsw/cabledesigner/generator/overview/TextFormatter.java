@@ -46,7 +46,7 @@ public class TextFormatter extends TextFormatterBase implements Overview.Formatt
     @Override
     public void formatConnectorSignal(String connectorName, String pinName,
                                       String signalName, String signalDescription,
-                                      float crossSection, String colorName) {
+                                      String wireDescription) {
         setPage(PAGE_CONNECTOR_SIGNALS);
         if (!connectorName.equals(currentConnector)) {
             if (currentConnector != null)
@@ -57,8 +57,7 @@ public class TextFormatter extends TextFormatterBase implements Overview.Formatt
         output.append(fill(pinName, 10));
         output.append(fill(signalName, 10));
         output.append(fill(signalDescription, 30));
-        output.append(fill(String.format("%.2fmm²", crossSection), 10));
-        output.append(colorName);
+        output.append(wireDescription);
         output.append('\n');
 
     }

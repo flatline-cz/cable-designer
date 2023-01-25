@@ -75,8 +75,8 @@ public class BOM extends GeneratorBase<BOM.Formatter> {
                 .filter(part -> part instanceof WireChainSegment)
                 .forEach(part -> updateBom(
                         bom,
-                        ((WireChainSegment) part).getWire().getSignal().getWireType().getPartNumber().getPartNumber(),
-                        ((WireChainSegment) part).getWire().getSignal().getWireType().getPartNumber().getVendor(),
+                        part.getWireChain().getSignalPath().getWireType().getPartNumber().getPartNumber(),
+                        part.getWireChain().getSignalPath().getWireType().getPartNumber().getVendor(),
                         ((WireChainSegment) part).getWire().getLength()));
     }
 
@@ -98,8 +98,9 @@ public class BOM extends GeneratorBase<BOM.Formatter> {
 
         // add all wires
         Services.getSignalManager()
-                .listWireChains()
-                .forEach(chain -> fillBOMWire(bom, chain));
+                .listSignalWirings()
+                .forEach(wiring -> wiring.listChains()
+                        .forEach(chain -> fillBOMWire(bom, chain)));
     }
 
     private void updateBom(Map<String, Material> bom, Component component) {
@@ -122,15 +123,15 @@ public class BOM extends GeneratorBase<BOM.Formatter> {
                              String vendor,
                              String units,
                              int count) {
-        if("--none--".equals(partNumber))
+        if ("--none--".equals(partNumber))
             return;
-        String key=partNumber+"##||##"+vendor;
-        Material material=bom.get(key);
-        if(material==null) {
-            material=new Material(type, partNumber, vendor, units);
+        String key = partNumber + "##||##" + vendor;
+        Material material = bom.get(key);
+        if (material == null) {
+            material = new Material(type, partNumber, vendor, units);
             bom.put(key, material);
         }
-        material.qty+=count;
+        material.qty += count;
     }
 
     private void updateBom(Map<String, Material> bom, String partNumber,
@@ -168,7 +169,7 @@ public class BOM extends GeneratorBase<BOM.Formatter> {
             this.type = type;
             this.partNumber = partNumber;
             this.units = units;
-            this.vendor = vendor!=null?vendor:"";
+            this.vendor = vendor != null ? vendor : "";
         }
 
         @Override

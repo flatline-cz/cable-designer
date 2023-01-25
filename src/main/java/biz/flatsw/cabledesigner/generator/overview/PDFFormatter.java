@@ -67,10 +67,11 @@ public class PDFFormatter extends PDFTableFormatter implements Overview.Formatte
     }
 
     @Override
-    public void formatConnectorSignal(String connectorName, String pinName, String signalName, String signalDescription, float crossSection, String colorName) {
+    public void formatConnectorSignal(String connectorName, String pinName, String signalName, String signalDescription,
+                                      String wireDescription) {
         setSection(Section.CONNECTOR_SIGNALS);
         if (!connectorName.equals(currentConnector)) {
-            addTable(0.1f, 0.1f, 0.1f, 0.4f, 0.15f, 0.15f);
+            addTable(0.1f, 0.1f, 0.1f, 0.4f, 0.3f);
             setTitle("Signals on "+connectorName, currentConnector == null);
             addHeaderRow();
             addCell("Connector");
@@ -78,7 +79,6 @@ public class PDFFormatter extends PDFTableFormatter implements Overview.Formatte
             addCell("Signal");
             addCell("Description");
             addCell("Wire");
-            addCell("Color");
             currentConnector = connectorName;
         }
         addRow();
@@ -86,8 +86,8 @@ public class PDFFormatter extends PDFTableFormatter implements Overview.Formatte
         addCell(pinName);
         addCell(signalName);
         addCell(signalDescription, LEFT);
-        addCell(String.format("%.2fmm²", crossSection));
-        addCell(colorName);
+//        addCell(String.format("%.2fmm²", crossSection));
+        addCell(wireDescription);
     }
 
     @Override
