@@ -43,7 +43,10 @@ public class ComponentAssigner {
             Integer wcIndex = signalPathWireIndexes.get(signalPath);
             if (wcIndex == null)
                 throw new RuntimeException("Wire class not assigned to signal '" + signalPath.getSignal().getName() + "'");
-            crossSection += wireClasses.get(wcIndex).wireSection;
+            float v = wireClasses.get(wcIndex).wireSection;
+            if (signalPath.getWireChain().isPinDoubleWired(pin))
+                v *= 2;
+            crossSection += v;
         }
         return (count == 1) ? crossSection : (crossSection * 1.f);
     }
@@ -57,7 +60,10 @@ public class ComponentAssigner {
             if (wcIndex == null)
                 throw new RuntimeException("Wire class not assigned to signal '" + signalPath.getSignal().getName() + "'");
             float d = wireClasses.get(wcIndex).insulationDiameter;
-            insulationDiameter += d * d;
+            d *= d;
+            if (signalPath.getWireChain().isPinDoubleWired(pin))
+                d *= 2;
+            insulationDiameter += d;
         }
         return (float) ((count == 1) ? Math.sqrt(insulationDiameter) : (Math.sqrt(insulationDiameter) * 1.f));
     }
@@ -200,7 +206,7 @@ public class ComponentAssigner {
                 if (!fitPinWiring(exMin.getPin()))
                     throw new RuntimeException("Unable to fit wires to pin: " + exMin.getPin() + ", cross-section=" + exMin.getCrossSection() + ", insulation=" + exMin.getInsulationDiameter());
             }
-        } while (++count < 10);
+        } while (++count < 1000);
 
         // assign actual wire types
         assignWireColors();

@@ -86,4 +86,19 @@ public class WireChainImpl implements WireChain {
     public boolean hasPin(Pin pin) {
         return parts.stream().anyMatch(p -> (p instanceof WireChainPin) && ((WireChainPin) p).getPin()==pin);
     }
+
+    @Override
+    public boolean isPinDoubleWired(Pin pin) {
+        int i;
+        for(i=0;i<parts.size();i++) {
+            WireChainPart part=parts.get(i);
+            if(part instanceof WireChainPin) {
+                if(((WireChainPin) part).getPin()==pin)
+                    break;
+            }
+        }
+        if(i==0 || i+1==parts.size() || parts.size()<3)
+            return false;
+        return true;
+    }
 }

@@ -18,4 +18,6 @@ public interface SignalPath {
     SignalSpecification getSpecification();
 
     Signal getSignal();
+
+    WireChain getWireChain();
 }

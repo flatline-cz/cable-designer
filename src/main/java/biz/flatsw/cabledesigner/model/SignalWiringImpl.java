@@ -27,6 +27,7 @@ public class SignalWiringImpl implements SignalWiring {
     @Override
     public WireChain createWireChain(SignalPath signalPath, Pin firstPin) {
         WireChain chain=new WireChainImpl(this, signalPath, firstPin, sequence++);
+        ((SignalPathImpl)signalPath).setWireChain(chain);
         wireChains.add(chain);
         return chain;
     }

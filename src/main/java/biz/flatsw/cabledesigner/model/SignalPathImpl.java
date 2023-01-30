@@ -11,6 +11,7 @@ public class SignalPathImpl implements SignalPath {
     private final boolean ordered;
     private final SignalSpecification signalSpecification;
     private final Signal signal;
+    private WireChain wireChain;
     private WireType wireType;
     private final List<Pin> terminals=new ArrayList<>();
 
@@ -55,5 +56,14 @@ public class SignalPathImpl implements SignalPath {
     @Override
     public Signal getSignal() {
         return signal;
+    }
+
+    @Override
+    public WireChain getWireChain() {
+        return wireChain;
+    }
+
+    public void setWireChain(WireChain wireChain) {
+        this.wireChain = wireChain;
     }
 }

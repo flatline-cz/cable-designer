@@ -52,10 +52,10 @@ public class Wiring extends GeneratorBase<Wiring.Formatter> {
         String sealPartNumber = pin.getSealType() != null
                 ? pin.getSealType().getPartNumber().getPartNumber()
                 : null;
-        WireChainPin.WireJointInfo jointInfo=wireChainPin.getWireJointInfo();
-        String jointText=jointInfo!=null
-                ?String.format("Splice joint (%d/%d)", jointInfo.getSequence(), jointInfo.getCount())
-                :null;
+        WireChainPin.WireJointInfo jointInfo = wireChainPin.getWireJointInfo();
+        String jointText = jointInfo != null
+                ? String.format("Splice joint (%d/%d)", jointInfo.getSequence(), jointInfo.getCount())
+                : null;
         formatter.formatPin(
                 pin.getConnector().getName(),
                 pin.getName(),
@@ -66,7 +66,7 @@ public class Wiring extends GeneratorBase<Wiring.Formatter> {
 
     private void generateWireSegment(WireChainSegment wireChainSegment) {
         Wire wire = wireChainSegment.getWire();
-        WireType wireType=wireChainSegment.getWireChain().getSignalPath().getWireType();
+        WireType wireType = wireChainSegment.getWireChain().getSignalPath().getWireType();
 
         formatter.formatWire(
                 wire.getLength(),
@@ -82,13 +82,19 @@ public class Wiring extends GeneratorBase<Wiring.Formatter> {
     private void generateWiring(SignalWiring signalWiring) {
         formatter.formatSignal(signalWiring.getSignalName());
 
-        for(WireChain wireChain : signalWiring.listChains()) {
+        Pin pin = null;
+        for (WireChain wireChain : signalWiring.listChains()) {
             for (WireChainPart chainPart : wireChain.listParts()) {
                 if (chainPart instanceof WireChainPin) {
-                    generatePin((WireChainPin) chainPart);
+                    if (((WireChainPin) chainPart).getPin() != pin)
+                        generatePin((WireChainPin) chainPart);
+                    pin = ((WireChainPin) chainPart).getPin();
                     continue;
                 }
                 if (chainPart instanceof WireChainSegment) {
+                    if (((WireChainSegment) chainPart).getWire().getLength() == 0)
+                        continue;
+                    pin = null;
                     generateWireSegment((WireChainSegment) chainPart);
                     continue;
                 }

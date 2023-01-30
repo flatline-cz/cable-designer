@@ -29,7 +29,7 @@ public class Router {
     private final Map<String, List<Pin>> terminals = new TreeMap<>();
 
     // actual routing context
-    private Map<String, RouteInfo> routeInfoMap = new TreeMap<>();
+    private final Map<String, RouteInfo> routeInfoMap = new TreeMap<>();
 
 
     public Router() {

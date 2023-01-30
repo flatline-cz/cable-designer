@@ -41,5 +41,7 @@ public interface WireChain {
 
     boolean hasPin(Pin pin);
 
+    boolean isPinDoubleWired(Pin pin);
+
 
 }
