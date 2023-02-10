@@ -19,10 +19,16 @@
 
 package biz.flatsw.cabledesigner.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class CableImpl implements Cable {
     private final int length;
     private final PathNode startNode;
     private final PathNode endNode;
+
+    private final List<WireChain> wireChains=new ArrayList<>();
 
     public CableImpl(int length, PathNode startNode, PathNode endNode) {
         this.length = length;
@@ -58,7 +64,21 @@ public class CableImpl implements Cable {
     }
 
     @Override
-    public String toString() {
+    public String getName() {
         return "Cable from "+startNode+" to "+endNode;
+    }
+
+    @Override
+    public List<WireChain> getWireChains() {
+        return Collections.unmodifiableList(wireChains);
+    }
+
+    @Override
+    public String toString() {
+        return getName();
+    }
+
+    public void addWireChain(WireChain wireChain) {
+        wireChains.add(wireChain);
     }
 }

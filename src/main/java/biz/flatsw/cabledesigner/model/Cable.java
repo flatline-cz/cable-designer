@@ -19,6 +19,8 @@
 
 package biz.flatsw.cabledesigner.model;
 
+import java.util.List;
+
 public interface Cable {
 
     int getLength();
@@ -28,5 +30,9 @@ public interface Cable {
     PathNode getStartNode();
 
     PathNode getEndNode();
+
+    String getName();
+
+    List<WireChain> getWireChains();
 
 }

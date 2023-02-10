@@ -486,7 +486,7 @@ public class DocumentParser implements InvocationHandler {
         float currentRating = parseCurrentRating(ctx.currentRating_rule());
         Color color = (ctx.wireColor_rule() != null)
                 ? parseColor(ctx.wireColor_rule())
-                : new ColorImpl(Config.getDefaultColor());
+                : null;
         return new SignalSpecification(currentRating, color);
     }
 
@@ -509,11 +509,12 @@ public class DocumentParser implements InvocationHandler {
     }
 
     private Color parseColor(CableDesignerParser.WireColor_ruleContext ctx) {
-        if (ctx.color2 == null) {
-            return new ColorImpl(ctx.color1.getText());
-        } else {
-            return new ColorImpl(new String[]{ctx.color1.getText(), ctx.color2.getText()});
-        }
+        String[] colors=new String[1+ctx.wireColorList_rule().size()];
+        colors[0]=ctx.color1.getText();
+        int i=1;
+        for(CableDesignerParser.WireColorList_ruleContext colorCtx : ctx.wireColorList_rule())
+            colors[i++]=colorCtx.color.getText();
+        return new ColorImpl(colors);
     }
 
     private PartNumber parsePartNumber(CableDesignerParser.PartNumber_ruleContext ctx) {

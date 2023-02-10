@@ -21,6 +21,8 @@ package biz.flatsw.cabledesigner.model;
 
 import biz.flatsw.cabledesigner.parser.CompilerFailure;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -34,7 +36,18 @@ public class CableManagerImpl implements CableManager {
                         cable.getStartNode().getName(),
                         cable.getEndNode().getName()),
                 cable);
+    }
 
+    @Override
+    public void addWireChain(PathNode from, PathNode to, WireChain wireChain) {
+        Cable cable=cableMap.get(getKey(from.getName(), to.getName()));
+        if(cable!=null)
+            ((CableImpl)cable).addWireChain(wireChain);
+    }
+
+    @Override
+    public Collection<Cable> listCables() {
+        return Collections.unmodifiableCollection(cableMap.values());
     }
 
     private String getKey(String from, String to) {

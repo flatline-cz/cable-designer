@@ -29,12 +29,12 @@ those I need to be satisfied with my own harness.
 # List of improvements:
 
 1. Multi-wire cables
-2. **STAR** topology of certain signals (especially ground)
+2. <del>**STAR** topology of certain signals (especially ground)</del> *Done*
 3. Connector variants
 4. <del>Pin sections</del> *Done*
 5. Logical signal routing (based on device description)
-6. Correct handing of pin size / wire size when more than one wire is 
-connected to the pin
+6. <del>Correct handing of pin size / wire size when more than one wire is 
+connected to the pin</del> Done
 
 
 # Arguments

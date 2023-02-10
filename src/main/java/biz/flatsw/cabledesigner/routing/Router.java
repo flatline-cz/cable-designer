@@ -162,7 +162,7 @@ public class Router {
         List<String> connNameList = new ArrayList<>();
         for (Pin pin : signalPath.listTerminals()) {
             String connName = pin.getConnector().getName();
-            if(!connNameList.contains(connName))
+            if (!connNameList.contains(connName))
                 connNameList.add(connName);
             List<Pin> conn = terminals.computeIfAbsent(connName, k -> new ArrayList<>());
             conn.add(pin);
@@ -222,7 +222,7 @@ public class Router {
         }
         System.out.println(dumpRoute(route));
 
-        SignalWiring signalWiring=Services
+        SignalWiring signalWiring = Services
                 .getSignalManager()
                 .createSignalWiring(signalPath.getSignal());
 
@@ -264,6 +264,10 @@ public class Router {
             if (routeNode instanceof RouteNodeWire) {
                 RouteNodeWire wireNode = (RouteNodeWire) routeNode;
                 cables.add(wireNode.getCable());
+                Services.getCableManager().addWireChain(
+                        wireNode.getCable().getStartNode(),
+                        wireNode.getCable().getEndNode(),
+                        wireChain);
             }
         }
     }
@@ -295,8 +299,8 @@ public class Router {
     }
 
     private static class RouteInfo implements Comparable<RouteInfo> {
-        private List<String> path;
-        private int distance;
+        private final List<String> path;
+        private final int distance;
 
         public RouteInfo(List<String> path, int distance) {
             this.path = path;

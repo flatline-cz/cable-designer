@@ -32,7 +32,8 @@ wireDefinitionColor: color=wireColor_rule partNumber_rule;
 
 wireCrossSection_rule: crossSection=(POSITIVE_FLOAT | POSITIVE_NUMBER) units=(KEYWORD_SQMM | KEYWORD_CMA);
 wireInsulation_rule: KEYWORD_INSULATION KEYWORD_DIAMETER diameter=(POSITIVE_FLOAT | POSITIVE_NUMBER) KEYWORD_MM;
-wireColor_rule: color1=COLOR_NAME (PIN_SEPARATOR color2=COLOR_NAME)? ;
+wireColor_rule: color1=COLOR_NAME wireColorList_rule* ;
+wireColorList_rule: PIN_SEPARATOR color=COLOR_NAME;
 
 currentRating_rule: KEYWORD_CURRENT KEYWORD_UP KEYWORD_TO current=(POSITIVE_FLOAT | POSITIVE_NUMBER) KEYWORD_AMPS;
 

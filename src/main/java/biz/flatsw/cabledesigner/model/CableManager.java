@@ -20,10 +20,16 @@
 package biz.flatsw.cabledesigner.model;
 
 
+import java.util.Collection;
+
 public interface CableManager {
 
     void addCable(Cable cable);
 
     Cable findByEnds(String from, String to);
+
+    Collection<Cable> listCables();
+
+    void addWireChain(PathNode from, PathNode to, WireChain wireChain);
 
 }
