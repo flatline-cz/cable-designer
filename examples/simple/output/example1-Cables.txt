@@ -1,0 +1,7 @@
+
+
+========= Cables (Example #1) ============
+Cable from Junction J1 to Connector C1F	W-1	0.5	100
+Cable from Junction J1 to Connector C1F	W-1	0.5	100
+Cable from Junction J1 to Connector C2F	W-1	0.5	100
+Cable from Junction J1 to Connector C3F	W-1	0.5	100

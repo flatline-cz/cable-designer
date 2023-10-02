@@ -1,0 +1,54 @@
+document "project" is "Examples"
+document "harness" is "Example #1"
+
+define wire 0.25 sqmm insulation diameter 1.1 mm current up to 1.1 amps
+    red "FLRY-A0.25-RD"
+    blue "FLRY-A0.25-BL"
+
+define wire 0.30 sqmm insulation diameter 1.2 mm current up to 1.6 amps
+    red "FLRY-A0.25-RD"
+    blue "FLRY-A0.25-BL"
+
+define wire 0.5 sqmm insulation diameter 1.6 mm current up to 2.1 amps
+    red "FLRY-A0.50-RD"
+    blue "FLRY-A0.50-BL"
+
+define wire 0.75 sqmm insulation diameter 1.7 mm current up to 6.0 amps
+    red "FLRY-A0.75-RD"
+    blue "FLRY-A0.75-BL"
+
+
+define single pin female "conn-type-1" connector
+    is housing "housing-1"
+    pin "pin 0.35-1" from "TE" for 0.35 sqmm ... 1 sqmm
+    pin "pin 1-2.5" from "TE" for 1 sqmm ... 2.5 sqmm
+
+define 2 pins female "conn-type-2" connector
+       is housing "housing-2"
+       pin "pin 0.35-1" from "TE" for 0.35 sqmm ... 1 sqmm
+       pin "pin 1-2.5" from "TE" for 1 sqmm ... 2.5 sqmm
+
+
+connector C1F "conn-1"
+    is 2 pins "conn-type-2"
+
+connector C2F "conn-2"
+       is single pin "conn-type-1"
+
+connector C3F "conn-3"
+    is single pin "conn-type-1"
+
+path between junction J1
+    and connector C1F with length 100mm
+    and connector C2F with length 100mm
+    and connector C3F with length 100mm
+
+
+signal "W-1" is "Signal #1"
+    current up to 1 amps red
+        connects C2F/1 C1F/1
+    current up to 1 amps blue
+        connects C1F/1 C3F/1
+
+
+
